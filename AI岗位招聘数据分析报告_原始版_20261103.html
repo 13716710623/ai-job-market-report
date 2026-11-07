@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 岗位招聘数据分析 · 第一阶段：桌面研究底稿</title>
+<style>
+:root{--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--a:#4f46e5;--bg:#f6f7fb}
+*{box-sizing:border-box}
+body{margin:0;padding:36px 18px;background:var(--bg);color:var(--ink);
+ font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+ line-height:1.78;font-size:15px}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px;border-bottom:3px solid var(--a);padding-bottom:14px}
+h2{font-size:20px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--a)}
+h3{font-size:17px;margin:28px 0 10px;color:#374151}
+h4{font-size:15px;margin:20px 0 8px;color:var(--a)}
+p{margin:10px 0}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;
+ background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05);display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#eef2ff;font-weight:600;white-space:nowrap}
+tbody tr:nth-child(even){background:#fafbff}
+blockquote{margin:14px 0;padding:12px 16px;background:#fff;border-left:4px solid #c7d2fe;
+ border-radius:0 6px 6px 0;color:#374151}
+blockquote p{margin:6px 0}
+code{background:#eef1f5;padding:1px 5px;border-radius:3px;font-size:13px;
+ font-family:Consolas,Monaco,monospace}
+a{color:var(--a)}
+ul,ol{margin:10px 0;padding-left:26px}
+li{margin:5px 0}
+.chartbox{background:#fff;border-radius:8px;padding:16px;margin:16px 0;
+ box-shadow:0 1px 2px rgba(0,0,0,.05);overflow-x:auto}
+.chartbox .cap{font-size:12px;color:var(--muted);margin-top:10px}
+@media print{
+ body{background:#fff;padding:0;font-size:11pt}
+ .wrap{max-width:none}
+ h2{page-break-after:avoid}
+ table,.chartbox{box-shadow:none;font-size:9.5pt}
+ tr,blockquote,.chartbox{page-break-inside:avoid}
+}
+@media (max-width:640px){table{font-size:12.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>AI 岗位招聘数据分析 · 第一阶段：桌面研究底稿</h1>
+<blockquote><p><strong>主问题：哪些岗位对应届生友好？它们要求什么？</strong></p><p>资料检索日：2026-11-02 ｜ 来源：<strong>7 份公开资料 + 1 份项目内部口径</strong>（S1–S8）｜ 阶段：Phase 1 / 2（S1–S5 已回原文核验，见附录 F）</p></blockquote>
+<hr>
+<h2 id="文档定位">文档定位</h2>
+<p><strong>它不是最终交付物，是第二阶段的前期假设。</strong></p>
+<table><thead><tr><th></th><th><strong>Phase 1（本文档）</strong></th><th><strong>Phase 2（待执行）</strong></th></tr></thead><tbody><tr><td>数据</td><td>7 份公开报告 / 数据集（二手）+ 1 份内部口径</td><td>200 条自采 JD（一手）</td></tr><tr><td>方法</td><td>口径对齐 + 证据综合</td><td>归一化 + 频次统计</td></tr><tr><td>产出</td><td>假设集、报告骨架、来源清单</td><td>实测图表、可复算结论</td></tr><tr><td>证据等级</td><td>只能做<strong>方向判断</strong></td><td>可做<strong>频次统计</strong></td></tr><tr><td>状态</td><td>✅ 已完成</td><td>⏸ 未开始</td></tr></tbody></table>
+<p><strong>Phase 2 的施工图在 §2：</strong> 配额表（2.1）、十天排期（2.2）、字段规范（2.3）、三条铁律（2.4）、检查点（2.5）全部保留。照着做完，<code>python run_all.py</code> 一键出真实图表，再把本文档 §5 逐节替换即可。</p>
+<p><strong>本文档的三条使用边界：</strong></p>
+<ol><li>所有数字后标注来源编号 <code>S1</code>…<code>S8</code>，可在<a href="#附录-d--资料来源清单-s1s8">附录 D</a>核验原文与 URL；<strong>哪些还没核验、怎么核，见<a href="#附录-f--来源核验清单">附录 F</a></strong>。</li><li>各来源<strong>口径不同</strong>（平均月薪 / 职位占比 / 全量 JD 提及率 / AI 岗位内提及率），<strong>分母不一致，不可直接相加或求差</strong>。</li><li>核心图图 4 是<strong>方向性编码（−3 ~ +3）</strong>，<strong>不是实测百分点</strong>——它是 Phase 1 的临时替身，Phase 2 必须换成真实差值（判定规则见 §1.2b）。</li></ol>
+<p><strong>目录</strong>：<a href="#文档定位">文档定位</a> · <a href="#0--一页纸概览">0 · 一页纸概览</a> · <a href="#1--立项">1 · 立项</a> · <a href="#2--资料采集">2 · 资料采集</a> · <a href="#3--数据处理">3 · 数据处理</a> · <a href="#4--分析方法">4 · 分析方法</a> · <a href="#5--报告正文">5 · 报告正文</a> · <a href="#6--里程碑检查表phase-1-完成情况">6 · 里程碑检查表（Phase 1 完成情况）</a> · <a href="#7--交付清单">7 · 交付清单</a> · <a href="#附录-a--面试讲述稿模板2-分钟">附录 A · 面试讲述稿模板（2 分钟）</a> · <a href="#附录-b--局限自查清单9-条">附录 B · 局限自查清单（9 条）</a> · <a href="#附录-c--常见问题">附录 C · 常见问题</a> · <a href="#附录-d--资料来源清单-s1s8">附录 D · 资料来源清单 S1–S8</a> · <a href="#附录-e--关键数字摘录表">附录 E · 关键数字摘录表</a> · <a href="#附录-f--来源核验清单">附录 F · 来源核验清单</a> · <a href="#修订记录2026-11-02-回原文核验后">修订记录（2026-11-02 回原文核验后）</a> · <a href="#附录-g--外部交叉验证8051-条公开-ai-岗位-jd">附录 G · 外部交叉验证（8,051 条公开 AI 岗位 JD）</a></p>
+<hr>
+<h2 id="0--一页纸概览">0 · 一页纸概览</h2>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody><tr><td><strong>项目名</strong></td><td>AI 岗位招聘数据分析（公开资料填充版）</td></tr><tr><td><strong>一句话</strong></td><td>用 7 份公开报告 / 数据集（外加 1 份项目内部口径 <code>S8</code>）替代 200 条一手 JD，分析技能、学历、经验要求，找出「应届生够得着的机会长什么样」</td></tr><tr><td><strong>周期</strong></td><td>本版：资料检索 + 撰写约半天；原框架 4 周方案（采集 2 周 + 分析 1 周 + 写作 1 周）保留于 §2.2</td></tr><tr><td><strong>交付物</strong></td><td>① <code>output/AI岗位招聘数据分析_填充版报告.html</code>（含 6 图）② 本 Markdown 文档 ③ 来源清单与数字摘录表（附录 D / E）</td></tr><tr><td><strong>技术栈</strong></td><td>原生 HTML + CSS + 内联 SVG（零依赖 JS 生成）；复用项目 <code>data/skills_dict.csv</code> 的 50 项技能词典口径</td></tr><tr><td><strong>不需要</strong></td><td>GPU、模型训练、爬虫；<strong>本版也不需要手动采集</strong>（但保留采集方案）</td></tr><tr><td><strong>资料规模</strong></td><td>最大样本：360,336 条 JD <code>S4</code>（CC BY 4.0 开放数据集）；11,219 条 AI 岗位 <code>S5</code>（<strong>动态页面，本报告锁定 2026-10-30 前后快照</strong>）；国内招聘平台报告 2 份 <code>S1</code> <code>S2</code> + 权威媒体 1 份 <code>S3</code></td></tr></tbody></table>
+<p><strong>四个一眼数字</strong></p>
+<table><thead><tr><th>46.98%</th><th>4.47%</th><th>7.6%</th><th>24.5%</th></tr></thead><tbody><tr><td>AI 技术职位要求硕博 <code>S2</code></td><td>全平台职位要求硕博（对照）<code>S2</code></td><td>AI 岗位内 RAG 提及率 <code>S5</code></td><td>实习岗 AI 提及率 &gt; 入门级 19.8% <code>S4</code></td></tr></tbody></table>
+<blockquote><p>⚠️ 第四个数字务必连语境一起引用：实习 24.49% <strong>只排第 4</strong>，Director 24.52%、VP 27.31%、Principal 39.51% 都更高。它的价值是「<strong>入门级 19.77% 全表最低</strong>」，不是「实习最高」。完整八级表见 §5 一④。</p></blockquote>
+<hr>
+<h2 id="1--立项">1 · 立项</h2>
+<h3 id="11-研究问题">1.1 研究问题</h3>
+<ol><li>出现频率最高的技能是什么？</li><li>学历要求怎么分布？</li><li><strong>哪些岗位对应届生友好？它们要求什么？</strong>（主问题，前两个是铺垫）</li></ol>
+<h3 id="12-假设表--全部-12-个空已填充">1.2 假设表 —— 全部 12 个空已填充</h3>
+<blockquote><p>✅ 4 条预期 × 3 列（预期 / 实际 / 差异原因）= 12 个空，已全部填充。</p></blockquote>
+<blockquote><p>「我的预期」按框架要求模拟采集前凭直觉写下的判断；「实际结果」全部取自公开资料；「差异原因」给机制解释而非「因为 AI 火」。</p></blockquote>
+<table><thead><tr><th>问题</th><th>我的预期（采集前）</th><th>实际结果（公开资料）</th><th>差异原因</th></tr></thead><tbody><tr><td><strong>最高频技能是</strong></td><td>「大模型 / LLM」会是第一名，算法框架类词霸榜</td><td>AI/ML 岗位内第一是 <strong>Python 18.8%</strong> <code>S5</code>；36 万条全量 JD 中 <strong>「AI」19.8%</strong> 是<strong>全量第 2 高频</strong>（仅次于 Communication 23.1%）、<strong>硬技能第 1</strong>，但具名 <strong>LLM 仅 4.2%</strong>、RAG / Prompt 各 1.6% <code>S4</code>；算法岗必备清单为 Python、C/C++、机器学习/深度学习、大模型算法、PyTorch、TensorFlow <code>S1</code></td><td>企业习惯写「AI / 大模型」这类<strong>能力词</strong>而不点名框架，具名技能被稀释到长尾；技能归一化（别名合并）会把基础项推到榜首，而「大模型」被合并成一个中等频次词</td></tr><tr><td><strong>应届友好岗占比</strong></td><td>大概 <strong>30%</strong>（总觉得「总有一批岗位是给新人留的」）</td><td>按框架严格定义（经验 ∈ {应届,1 年以内} 且 学历 ∈ {大专,本科,不限}）<strong>推算约 15–25%</strong>；放宽到含「经验不限 / 允许硕士」可升到 <strong>30–40%</strong> <code>S1</code> <code>S2</code> <code>S6</code>（推算方法见 §3，<strong>非原始统计</strong>）</td><td>算法岗与产品岗被<strong>学历 + 经验双重卡住</strong>：AI 技术岗 46.98% 要硕博 <code>S2</code>，算法岗 34% 要硕博且近 6 成要 1–5 年经验 <code>S1</code>，AI 产品经理 57% 要 3 年以上 <code>S1</code>；友好岗被挤到「数据标注」与「AI 应用开发」两个窄口</td></tr><tr><td><strong>应届岗最看重的技能</strong></td><td>Python、机器学习基础、数据结构与算法（学校里教的那套）</td><td><strong>RAG、提示词 / Prompt、LangChain / LlamaIndex、Agent 与多智能体、Function Calling、Dify / Coze、数据标注与清洗、评测</strong> <code>S5</code> <code>S6</code>；校招岗位实例集中在「AI 应用开发工程师 / AI Agent 开发 / 模型部署」<code>S6</code> <code>S7</code></td><td>这些是<strong>「调用现成模型组装业务」</strong>的工作单元：单次错误可回滚、可观测、边际成本低，适合交给新人；开源框架与低代码普及又把门槛压低（中小微企业占 AI 招聘 80%+ <code>S1</code>）</td></tr><tr><td><strong>应届岗最不看重的技能</strong></td><td>分布式训练、CUDA（觉得太底层，新人用不上）</td><td>方向对但范围偏窄：<strong>预训练、CUDA / 算子、分布式训练、论文复现 / 顶会、强化学习 / RLHF、模型量化与推理优化</strong>均为负向；更强的两个负向筛子其实是<strong>「硕博学历」与「5–10 年经验」本身</strong> <code>S1</code> <code>S2</code> <code>S4</code></td><td>训练类工作需昂贵算力与长周期试错，成本与风险由公司承担，企业只交给有履历背书的人；<strong>筛人先筛学历和经验，技能要求只是结果，不是原因</strong></td></tr></tbody></table>
+<blockquote><p>✅ <strong>这一栏填完之后，报告从「数据罗列」变成「研究」</strong>：四条预期里三条被数据修正，最关键的一次修正是 <em>「门槛低 ≠ 技术含量低」</em>——实习岗对 AI 的提及率 24.5% 反而<strong>高于</strong>入门级 19.8% <code>S4</code>。</p><p>⚠️ <strong>但这条修正已被二次修正（2026-11-02 回原文核验后）</strong>：查 S4 原始职级表发现 Director 24.52%、VP 27.31% 也都高于实习岗，实习只排第 4，<strong>「新人岗最要求 AI」的说法不成立</strong>。保留下来的正确结论是 <em>「AI 提及率随资历上升，唯一例外是实习岗高于入门级；入门级最低、管理层最高」</em>。完整八级表与三点口径提醒见 §5 一④，答辩前务必看那一节。</p></blockquote>
+<h3 id="12b-假设--一手验证对照表phase-1-交给-phase-2-的作业">1.2b 假设 → 一手验证对照表（Phase 1 交给 Phase 2 的作业）</h3>
+<blockquote><p>1.2 的四条预期已经用二手资料「回答」过一遍。但那不算验证——<strong>下面这张表才是 Phase 1 真正的产出：把结论翻译成可以用 200 条数据证伪的命题。</strong></p></blockquote>
+<table><thead><tr><th>#</th><th>Phase 1 假设</th><th>Phase 2 怎么验证</th><th>看哪个文件</th></tr></thead><tbody><tr><td><strong>H1</strong></td><td>最高频技能是 Python，具名 LLM 类词被稀释到长尾</td><td>跑完 <code>run_all.py</code>，看技能词频 Top 5 及占比</td><td><code>output/tables/01_技能词频.csv</code></td></tr><tr><td><strong>H2</strong></td><td>应届友好岗只占 15–25%</td><td>看 <code>check_data.py</code> 输出的应届友好占比</td><td><code>output/tables/meta.json</code></td></tr><tr><td><strong>H3</strong></td><td>应届岗<strong>更常</strong>要求 RAG / Prompt / LangChain / Agent / 数据标注</td><td>看「差值」列的正向前列</td><td><code>output/tables/05_应届友好_技能对比.csv</code>；<strong>外部交叉验证见附录 G（弱支持）</strong></td></tr><tr><td><strong>H4</strong></td><td>应届岗<strong>更少</strong>要求 预训练 / CUDA / 分布式训练 / 论文复现</td><td>看「差值」列的负向前列</td><td>同上；<strong>外部交叉验证见附录 G（部分支持）</strong></td></tr><tr><td><strong>H5</strong></td><td>门槛低 ≠ 技术含量低（实习岗 AI 提及率高于入门级）</td><td>⚠️ <strong>当前字段采不到</strong>：<code>jobs_template.csv</code> 没有「职级」列。要么加一列 <code>岗位性质</code>（实习/校招/社招）再采，要么放弃这个结论</td><td>需扩表结构</td></tr></tbody></table>
+<p><strong>预先登记的判定规则（先定好，避免事后给自己找理由）：</strong></p>
+<table><thead><tr><th>差值绝对值</th><th>判定</th><th>报告里怎么写</th></tr></thead><tbody><tr><td>≥ 10 个百分点</td><td>✅ 支持</td><td>「H3 得到支持：RAG 在应届岗中高出 15.2 个百分点」</td></tr><tr><td>5–10 个百分点</td><td>🟡 弱支持</td><td>「方向一致，但幅度远小于 Phase 1 的方向性编码预期」</td></tr><tr><td>&lt; 5 个百分点</td><td>❌ 不支持</td><td>「H3 未被验证，应届岗与整体无明显差异」</td></tr></tbody></table>
+<blockquote><p><strong>先写规则再跑数，是防止自己骗自己的唯一办法。</strong></p><p>如果跑完发现 H3 不支持，那比「验证成功」更有价值——它说明二手资料的方向性编码本身存在偏差，而这正是值得写进报告的发现。</p></blockquote>
+<p><strong>图 4 替换规程（Phase 2 执行，替代现在的方向性编码）</strong></p>
+<table><thead><tr><th>步骤</th><th>动作</th><th>判据</th></tr></thead><tbody><tr><td>1</td><td>采满 200 条，跑 <code>python run_all.py</code></td><td><code>output/tables/meta.json</code> 里 <code>应届友好数</code> ≥ 40</td></tr><tr><td>2</td><td>打开 <code>output/tables/05_应届友好_技能对比.csv</code>，取「差值」列</td><td>这是<strong>真实百分点差</strong>，可直接替代 ±3 编码</td></tr><tr><td>3</td><td>按上面的判定规则给 H3 / H4 定性</td><td>≥10 支持 / 5–10 弱支持 / &lt;5 不支持</td></tr><tr><td>4</td><td>用真实差值重绘图 4，删掉「方向性编码，非实测」的字样与全部口径警告</td><td>图题改为「应届友好岗 vs 全部岗位：技能占比差（百分点）」</td></tr><tr><td>5</td><td>若 H3 或 H4 不被支持，<strong>不要改数据，改结论</strong></td><td>写进 §七「最意外的发现」——二手资料的方向编码本身有偏，这才是发现</td></tr></tbody></table>
+<blockquote><p>这一节存在的意义，是让 Phase 2 不用重新想「怎么换」，照着表做即可。</p><p><strong>在替换完成前，图 4 只能当方向指示，不能当结论引用。</strong></p></blockquote>
+<h3 id="13-边界明确不做什么">1.3 边界：明确不做什么</h3>
+<ul><li>❌ 不做纵向趋势（原框架无历史数据）——本版资料自带同比增速，仅在文字中作背景引用，<strong>不画趋势图、不外推</strong></li><li>❌ 不做薪资预测</li><li>❌ 不追求统计显著性</li><li>❌ 不爬虫（手动采集，合法且可控）</li><li>❌ <strong>本版新增</strong>：不把不同来源、不同分母的百分比合并成一个「总样本」；不把推断值伪装成实测值</li></ul>
+<blockquote><p>主动划边界，比假装什么都能做更专业。</p></blockquote>
+<hr>
+<h2 id="2--资料采集">2 · 资料采集</h2>
+<blockquote><p><strong>本节处理</strong>：框架 2.1–2.5 是「怎么做」的原文，全部保留（它是把本版升级成一手数据版的施工图）；新增 2.6 是<strong>本版实际采集到的资料</strong>。两者不冲突：一个是将来要做的事，一个是这次已经做的事。</p></blockquote>
+<h3 id="21-采样配额">2.1 采样配额</h3>
+<table><thead><tr><th>岗位大类</th><th>配额</th><th>搜索关键词</th></tr></thead><tbody><tr><td>算法/研究</td><td>60</td><td>算法工程师、机器学习、CV算法、NLP算法、推荐算法</td></tr><tr><td>应用开发</td><td>70</td><td>大模型应用、AI应用开发、Agent开发、RAG、提示词工程</td></tr><tr><td>工程/平台</td><td>40</td><td>推理优化、模型部署、AI平台、数据工程、算法测试</td></tr><tr><td>产品/方案</td><td>30</td><td>AI产品经理、AI解决方案、售前</td></tr><tr><td><strong>合计</strong></td><td><strong>200</strong></td><td></td></tr></tbody></table>
+<p><strong>城市配额</strong>：北京 80｜上海 30｜深圳 25｜杭州 25｜其他（成都/合肥/苏州/南京）40 <strong>公司类型</strong>：大厂 60｜中厂/创业 80｜国企/制造业 40｜其他 20</p>
+<h3 id="22-十天排期表">2.2 十天排期表</h3>
+<p><strong>D1–D5</strong></p>
+<table><thead><tr><th>天</th><th>主采方向</th><th>关键词</th><th>条数</th></tr></thead><tbody><tr><td>D1</td><td>应用开发</td><td>大模型应用、提示词工程</td><td>20</td></tr><tr><td>D2</td><td>应用开发</td><td>AI应用开发、AI开发工程师</td><td>20</td></tr><tr><td>D3</td><td>算法</td><td>算法工程师</td><td>20</td></tr><tr><td>D4</td><td>算法</td><td>CV算法、NLP算法</td><td>20</td></tr><tr><td>D5</td><td>工程</td><td>推理优化、模型部署</td><td>20</td></tr></tbody></table>
+<p><strong>D6–D10</strong></p>
+<table><thead><tr><th>天</th><th>主采方向</th><th>关键词</th><th>条数</th></tr></thead><tbody><tr><td>D6</td><td>应用开发</td><td>Agent开发、RAG工程师</td><td>20</td></tr><tr><td>D7</td><td>算法</td><td>推荐算法、机器学习工程师</td><td>20</td></tr><tr><td>D8</td><td>工程</td><td>AI平台、数据工程、算法测试</td><td>20</td></tr><tr><td>D9</td><td>产品/方案</td><td>AI产品经理、AI解决方案</td><td>20</td></tr><tr><td>D10</td><td><strong>查漏补缺</strong></td><td>按 <code>check_data.py</code> 的 ⚠️ 补</td><td>20</td></tr></tbody></table>
+<p><strong>每天城市分配</strong>：北京 8，上海 3，深圳 2.5（隔天 2/3 交替），杭州 2.5，其他 4。 <strong>排序规则：一律按「发布时间」排序取前 20 条</strong>，不要按薪资、不要按推荐——那会让样本被平台算法带偏。</p>
+<h3 id="23-字段填写规范">2.3 字段填写规范</h3>
+<table><thead><tr><th>字段</th><th>怎么填</th><th>反例</th></tr></thead><tbody><tr><td><code>job_id</code></td><td>J001 递增</td><td>—</td></tr><tr><td><code>岗位名称</code></td><td>照抄 JD 标题</td><td>❌ 自己概括成「算法岗」</td></tr><tr><td><code>公司</code></td><td>可脱敏为「某互联网公司」</td><td>—</td></tr><tr><td><code>城市</code></td><td>只写城市名</td><td>❌「北京-海淀」</td></tr><tr><td><code>学历要求</code></td><td><strong>照抄原文</strong></td><td>❌ 提前归一化成「本科」</td></tr><tr><td><code>经验要求</code></td><td><strong>照抄原文</strong></td><td>❌ 提前归一化成「应届」</td></tr><tr><td><code>薪资下限/上限</code></td><td>月薪，千元，只填数字</td><td>❌ 填 20000（那是元）</td></tr><tr><td><code>技能关键词</code></td><td>从 JD 原文摘，<code>;</code> 分隔</td><td>❌ 凭印象补「应该要」的</td></tr><tr><td><code>岗位性质</code></td><td>✅ <strong>本版新增</strong>：实习 / 校招 / 社招，照抄 JD 明示或按「招聘对象」判断。<strong>这张表原本没有此列，导致 §1.2b 的 H5 无法验证</strong>（详见 §1.2b）</td><td>❌ 凭岗位标题推断成「校招」</td></tr><tr><td><code>岗位描述</code></td><td>可留空；填了能自动补抽技能</td><td>—</td></tr><tr><td><code>来源</code> / <code>采集日期</code></td><td>BOSS直聘 / 拉勾 / 官网；2026-11-02</td><td>—</td></tr></tbody></table>
+<h3 id="24-四条铁律">2.4 四条铁律</h3>
+<ol><li><strong>学历、经验照抄原文。</strong> 归一化是脚本的活，手动改了反而掩盖数据问题。</li><li><strong>技能只写 JD 里真的出现的词。</strong> 脑补的技能会让结论变成你自己的偏见。</li><li><strong>薪资面议就留空，绝不编。</strong></li><li>✅ <strong>本版新增：区分「事实」与「推断」。</strong> 二手资料未披露的项一律留空并标注「未披露」，推断值必须带 <code>推断</code> 标签与推算过程，绝不伪装成原始统计。</li></ol>
+<h3 id="25-三个检查点">2.5 三个检查点</h3>
+<table><thead><tr><th>采到</th><th>框架要求</th><th>本版等价动作</th></tr></thead><tbody><tr><td><strong>20 条</strong></td><td>跑 <code>check_data.py</code>，看岗位大类是否严重偏</td><td>核对来源是否覆盖「技能 / 学历 / 经验 / 薪资 / 城市 / 应届」六个维度，缺哪类补搜哪类</td></tr><tr><td><strong>100 条</strong></td><td>看城市、学历分布，补采缺的类别</td><td>交叉验证：同一数字至少找两个独立出处（如 S1 全文 + 潮新闻 / 百度百科转述）</td></tr><tr><td><strong>200 条</strong></td><td>跑 <code>run_all.py</code> 出报告</td><td>数字逐条回填来源编号，无法溯源的数字全部删除</td></tr></tbody></table>
+<h3 id="26-本版实际采集7-份公开资料--1-份内部口径s1s8">2.6 本版实际采集：7 份公开资料 + 1 份内部口径（S1–S8）</h3>
+<blockquote><p>✅ 采集完成。⚠️ 口径更正：S8 是<strong>项目内部资产</strong>（技能词典与分析口径），不算公开资料，因此全文统一表述为「7 份公开资料 + 1 份内部口径」。</p></blockquote>
+<table><thead><tr><th>#</th><th>来源</th><th>时间窗</th><th>样本 / 口径</th><th>用于回答</th><th>等级</th></tr></thead><tbody><tr><td>S1</td><td>智联招聘《2025年人工智能产业人才发展报告》</td><td>2025 前三季度 / Q3，发布于 2025-10</td><td>智联平台全量 AI 相关职位与求职者</td><td>学历、经验、薪资、城市、技能、企业规模</td><td>A 平台官方报告</td></tr><tr><td>S2</td><td>猎聘《2025 AI 技术人才供需洞察报告》</td><td>2024-02 ~ 2025-01，发布于 2025-03</td><td>猎聘平台 AI 技术职位 vs 整体职位</td><td>硕博门槛（46.98%）、岗位细分结构</td><td>A 平台官方报告</td></tr><tr><td>S3</td><td>新华社《AI 热潮中，哪类人才最紧缺？》及党报转载</td><td>2025 年春招（2 月）</td><td>智联春招数据 + 招聘会现场数据</td><td>细分岗位月薪、需求增速、产业背景</td><td>B 权威媒体</td></tr><tr><td>S4</td><td>Qarera《The Most In-Demand Skills of 2026》</td><td>2025-12-27 ~ 2026-06-16</td><td><strong>360,336 条 JD</strong>，CC BY 4.0 开放数据集</td><td>技能 Top 20、按职级 AI 提及率、远程倍数</td><td>A 原始数据</td></tr><tr><td>S5</td><td>AI Pulse《AI Job Market Intelligence》</td><td><strong>快照：2026-10-30 前后</strong>（页面每周刷新，数字会漂移）</td><td><strong>11,219 条活跃 AI 岗位</strong>（Indeed / LinkedIn / Greenhouse / Lever / 官网）</td><td>AI 岗位内工具频次、岗位类别分布</td><td>A 原始数据</td></tr><tr><td>S6</td><td>CSDN AI Agent 社区《2026年校招AI风口》</td><td>2026 校招季</td><td>校招岗位汇编 + 引用猎聘新发职位增速</td><td>应届岗技能清单、校招岗位实例</td><td>C 行业汇编</td></tr><tr><td>S7</td><td>offer 多多《2026 秋招企业汇总表》</td><td>2026 届秋招</td><td>校招公告聚合</td><td>佐证大厂确实开设大模型 / AI 研发校招岗</td><td>C 聚合站点</td></tr><tr><td>S8</td><td>项目本地资产（框架、README、skills_dict.csv、analyze.py）</td><td>—</td><td>50 项技能词典 + 分析口径</td><td>技能归一化标准、「应届友好」操作化定义</td><td>B 内部口径</td></tr></tbody></table>
+<blockquote><p>完整 URL、机构、引用方式见<a href="#附录-d--资料来源清单-s1s8">附录 D</a>。C 级来源只做<strong>定性佐证</strong>，不用于任何百分比结论。</p></blockquote>
+<hr>
+<h2 id="3--数据处理">3 · 数据处理</h2>
+<blockquote><p>框架说「脚本已写好，你只需要理解它做了什么——<strong>面试会问</strong>」。本版没有 200 条 JD 可跑，因此列出<strong>等价处理</strong>：把公开资料整理成可比较的形式。</p></blockquote>
+<table><thead><tr><th>步骤</th><th>框架做了什么 / 为什么</th><th>本版等价做法</th></tr></thead><tbody><tr><td>归一化</td><td>「统招本科」→本科，「1~3年」→1-3年；原始写法太乱，不统一没法统计</td><td>统一币种与单位：所有薪资换算为<strong>元/月</strong>；学历统一为「大专 / 本科 / 硕博 / 不限」；技能名对齐 <code>skills_dict.csv</code> 的 50 项标准名与别名（「大模型 / LLM / 大语言模型」→ 大模型）</td></tr><tr><td>技能抽取</td><td>50 项词典 + 别名匹配；「大模型/LLM/大语言模型」得是同一个词</td><td>S4 与 S5 的技能标签已由原作者标准化；本项目按 S8 词典再映射一次，<strong>跨源同名才合并</strong>（如 RAG、Prompt Engineering、LangChain）</td></tr><tr><td>薪资计算</td><td>(下限+上限)/2，用中位数代表一条岗位薪资</td><td>公开资料只给<strong>平均招聘月薪</strong>，无区间，无法算中位数。<code>口径警告</code> 全文按「平均月薪」呈现，不与项目中位数混用</td></tr><tr><td>应届友好标签</td><td>经验 ∈ {应届, 1 年以内} 且 学历 ∈ {大专, 本科, 不限} —— <strong>这是操作化定义，可以质疑</strong></td><td>沿用同一定义做<strong>区间推算 + 敏感性分析</strong>（见下）</td></tr></tbody></table>
+<blockquote><p><strong>⚠️ 「应届友好」定义是你自己定的，换个定义结论会变。</strong> 公开资料没有直接给「应届友好岗占比」，因此这里给的是<strong>可复算的推算</strong>，不是原始统计：</p><p>| 口径 | 推算过程（基于 <code>S1</code> <code>S2</code>） | 结果 |</p><p>|---|---|---|</p><p>| <strong>严格定义</strong>&lt;br&gt;经验 ≤1 年 且 学历 ≤本科 | 算法岗：46.98% 要硕博直接排除 <code>S2</code>，余下本科岗中近 6 成要求 1–5 年经验 <code>S1</code> → 友好约 1–2 成；产品岗：57% 要 3 年以上 → 极低；数据标注：45% 要大专 + 超 5 成无经验硬要求 <code>S1</code> → 最高。按框架四类岗位配额（60/70/40/30）加权 | <strong>约 15–25%</strong> |</p><p>| <strong>宽松定义</strong>&lt;br&gt;含「经验不限」、允许硕士 | 把「经验不限」全部计入友好，并解除硕博排除条件 | <strong>约 30–40%</strong> |</p><p>区间跨度近一倍 —— 这本身就是结论：<strong>「应届友好岗有多少」这个问题，一半的答案藏在定义里。</strong></p></blockquote>
+<blockquote><p>| 岗位大类 | 配额 | 权重 | 严格口径友好率（<strong>估计值</strong>） | 对总体的贡献 |</p><p>|---|---:|---:|---:|---:|</p><p>| 应用开发（AI 应用 / Agent / RAG） | 70 | 35% | 30%（学历以本科为主、经验要求最松） | 10.50% |</p><p>| 工程 / 平台（部署 / 数据 / 测试） | 40 | 20% | 25% | 5.00% |</p><p>| 算法 / 研究 | 60 | 30% | 8%（AI 技术职位 46.98% 要硕博 <code>S2</code> + 近 6 成要 1–5 年 <code>S1</code>） | 2.40% |</p><p>| 产品 / 方案 | 30 | 15% | 5%（57% 要 3 年以上 <code>S1</code>） | 0.75% |</p><p>| <strong>合计</strong> | <strong>200</strong> | <strong>100%</strong> | | <strong>≈ 18.7%</strong> |</p><p>严格口径 ≈ <strong>18.7%</strong>（落在 15–25% 区间中位）；宽松口径把「经验不限」全部计入并解除硕博排除，各类友好率上浮约 15–20 个百分点，合计 ≈ <strong>35%</strong>（落在 30–40% 区间）。</p><p>⚠️ <strong>必须声明</strong>：表中每一行的「友好率」都是<strong>基于 S1 / S2 分段证据的估计值，不是任何来源的原始统计</strong>。链条上任何一项假设（比如算法岗友好率从 8% 改到 12%）都会直接改变结果——所谓「可复算」，复算的是<strong>这个算式</strong>，不是数据本身。这也是为什么 §1.2b 把 H2 列为待一手验证的命题。</p></blockquote>
+<hr>
+<h2 id="4--分析方法">4 · 分析方法</h2>
+<table><thead><tr><th>问题</th><th>方法</th><th>产出</th><th>本版对应</th></tr></thead><tbody><tr><td>最高频技能</td><td>技能频次统计</td><td>条形图 Top 15</td><td>图 1（双口径对照）</td></tr><tr><td>学历分布</td><td>频次统计</td><td>条形图</td><td>图 2</td></tr><tr><td>经验分布</td><td>频次统计</td><td>条形图</td><td>图 3</td></tr><tr><td><strong>应届岗 vs 全部</strong></td><td>两组技能占比求差</td><td><strong>双向条形图（核心图）</strong></td><td>图 4（方向性编码版 + 实测锚点）</td></tr><tr><td>薪资水平</td><td>分组中位数</td><td>按学历/经验的条形图</td><td>图 5（平均月薪，口径已标注）</td></tr><tr><td>地域分布</td><td>频次统计</td><td>城市条形图</td><td>图 6</td></tr></tbody></table>
+<blockquote><p><strong>核心分析逻辑（要能讲出来）</strong>：</p><p>把「应届友好岗」和「全部岗位」的技能占比相减。正数 = 应届岗更常要求；负数 = 应届岗更少要求。这个差值回答的是：<strong>企业愿意交给新人的活，和交给老手的活，差在哪。</strong></p><p>本版因缺少一手 JD，无法计算真实百分点差，改为对多源证据做 −3 ~ +3 的方向性编码；同时用 <code>S4</code> 的「按职级 AI 提及率」提供一个<strong>可核验的实测锚点</strong>。升级成一版数据时按框架原方法重算即可。</p></blockquote>
+<hr>
+<h2 id="5--报告正文">5 · 报告正文</h2>
+<h3 id="一核心发现">一、核心发现</h3>
+<ol><li><strong>技能</strong>：AI/ML 岗位内 Python 以 <strong>18.8%</strong> 居首，但 LLM 应用层技能被显著放大——RAG <strong>7.6%</strong>、Prompt Engineering <strong>3.9%</strong>、LangChain <strong>3.0%</strong>，分别是全量 JD 口径（1.6% / 1.6% / 2.2%）的约 4.8 / 2.4 / 1.4 倍 <code>S4</code> <code>S5</code>。</li><li><strong>学历</strong>：<strong>AI 技术职位</strong>（猎聘口径，含算法岗但不限于算法岗）要求硕博的占 <strong>46.98%</strong>（硕士 42.72% + 博士 4.27%），而全平台职位仅 <strong>4.47%</strong>，相差 <strong>10.5 倍</strong> <code>S2</code>；算法岗「本科及以上」近九成，其中 34% 明确要硕博 <code>S1</code>。</li><li><strong>应届友好</strong>：按框架严格定义推算约 <strong>18.7%</strong>（区间 15–25%，加权算式见 §3），且高度集中在数据标注/AI 训练师（&gt;50% 无经验硬要求、45% 要大专）与 AI 应用开发岗 <code>S1</code> <code>S6</code>；AI 产品经理 57% 要求 3 年以上经验，几乎不友好 <code>S1</code>。</li><li><strong>反直觉（原表述有误，已修正）</strong>：<strong>实习岗</strong>对 AI 的提及率 <strong>24.5%</strong>，高于入门级 <strong>19.8%</strong> 和中高级 <strong>19.9%</strong> <code>S4</code> —— 新人岗确实不是「不要 AI」。但把 S4 的完整八级表摊开后，原稿「仅低于 Principal 级」的说法<strong>不成立</strong>：</li></ol>
+<table><thead><tr><th>职级</th><th>岗位数</th><th>其中提及 AI</th><th>提及率</th></tr></thead><tbody><tr><td>Principal</td><td>8,830</td><td>3,489</td><td><strong>39.51%</strong></td></tr><tr><td>Vice President</td><td>2,981</td><td>814</td><td><strong>27.31%</strong></td></tr><tr><td>Director</td><td>5,252</td><td>1,288</td><td><strong>24.52%</strong></td></tr><tr><td><strong>Internship（实习）</strong></td><td><strong>10,494</strong></td><td><strong>2,570</strong></td><td><strong>24.49%</strong></td></tr><tr><td>Executive</td><td>1,043</td><td>208</td><td>19.94%</td></tr><tr><td>Mid-Senior Level</td><td>316,258</td><td>62,888</td><td>19.89%</td></tr><tr><td>Entry Level（入门级）</td><td>15,631</td><td>3,090</td><td>19.77%</td></tr><tr><td>Not Specified</td><td>2</td><td>0</td><td>—</td></tr></tbody></table>
+<p>✅ <strong>修正后的结论</strong>：Director（24.52%）与 VP（27.31%）都<strong>不低于</strong>实习岗，实习实际只排第 4 位。所以严格表述应是——<strong>AI 提及率与资历并非单调关系</strong>：入门级（19.77%）是全表最低，而管理层（Director / VP / Principal）最高。真正的反直觉点是<strong>「刚入门的岗位最不被要求提 AI，做决策的岗位最被要求提 AI」</strong>——企业高层要的是「用 AI 做判断」，基层要的是「用 AI 执行」，而不是「新人岗更卷 AI」。</p>
+<blockquote><p>⚠️ <strong>三点口径提醒（答辩必被追问，务必答得上来）</strong>：① 上表统计的是<strong>「岗位描述中提及 AI / 生成式 AI」的比例</strong>，不等于「要求某项 AI 技能」，更不等于本报告定义的「应届友好」；② 样本极不平衡——中高级一条就占 316,258 条（87.8%），而实习仅 10,494 条（2.9%）、入门级 15,631 条（4.3%），小样本层的百分比波动更大，且本项目 1.3 已声明不做显著性检验；③ 「实习」是<strong>职级标签</strong>，与「应届友好」（经验 ≤1 年 且 学历 ≤本科）不是同一回事，两者不能互相替换论证。</p></blockquote>
+<h3 id="二技能分布">二、技能分布</h3>
+<div class="chartbox"><svg viewBox="0 0 680 368" width="100%" height="368" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="120.0" y1="18" x2="120.0" y2="346" stroke="#e5e7eb" stroke-width="1"/>
+<text x="120.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">0%</text>
+<line x1="236.0" y1="18" x2="236.0" y2="346" stroke="#e5e7eb" stroke-width="1"/>
+<text x="236.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">5%</text>
+<line x1="352.0" y1="18" x2="352.0" y2="346" stroke="#e5e7eb" stroke-width="1"/>
+<text x="352.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">10%</text>
+<line x1="468.0" y1="18" x2="468.0" y2="346" stroke="#e5e7eb" stroke-width="1"/>
+<text x="468.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">15%</text>
+<line x1="584.0" y1="18" x2="584.0" y2="346" stroke="#e5e7eb" stroke-width="1"/>
+<text x="584.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">20%</text>
+<text x="112" y="43.5" text-anchor="end" font-size="11.5" fill="#1f2937">Python</text>
+<rect x="120" y="29" width="436.2" height="18" rx="3" fill="#4f46e5"/>
+<text x="561.2" y="42.5" font-size="10.5" fill="#1f2937">18.8%</text>
+<rect x="120" y="44" width="431.5" height="5" rx="2" fill="#0d9488"/>
+<text x="556.5" y="51" font-size="9.5" fill="#0d9488">18.6%</text>
+<text x="112" y="70.5" text-anchor="end" font-size="11.5" fill="#1f2937">AWS</text>
+<rect x="120" y="56" width="220.4" height="18" rx="3" fill="#4f46e5"/>
+<text x="345.4" y="69.5" font-size="10.5" fill="#1f2937">9.5%</text>
+<rect x="120" y="71" width="262.2" height="5" rx="2" fill="#0d9488"/>
+<text x="387.2" y="78" font-size="9.5" fill="#0d9488">11.3%</text>
+<text x="112" y="97.5" text-anchor="end" font-size="11.5" fill="#1f2937">Azure</text>
+<rect x="120" y="83" width="183.3" height="18" rx="3" fill="#4f46e5"/>
+<text x="308.3" y="96.5" font-size="10.5" fill="#1f2937">7.9%</text>
+<rect x="120" y="98" width="190.2" height="5" rx="2" fill="#0d9488"/>
+<text x="315.2" y="105" font-size="9.5" fill="#0d9488">8.2%</text>
+<text x="112" y="124.5" text-anchor="end" font-size="11.5" fill="#1f2937">RAG</text>
+<rect x="120" y="110" width="176.3" height="18" rx="3" fill="#4f46e5"/>
+<text x="301.3" y="123.5" font-size="10.5" fill="#1f2937">7.6%</text>
+<rect x="120" y="125" width="37.1" height="5" rx="2" fill="#0d9488"/>
+<text x="162.1" y="132" font-size="9.5" fill="#0d9488">1.6%</text>
+<text x="112" y="151.5" text-anchor="end" font-size="11.5" fill="#1f2937">GCP</text>
+<rect x="120" y="137" width="134.6" height="18" rx="3" fill="#4f46e5"/>
+<text x="259.6" y="150.5" font-size="10.5" fill="#1f2937">5.8%</text>
+<text x="112" y="178.5" text-anchor="end" font-size="11.5" fill="#1f2937">PyTorch</text>
+<rect x="120" y="164" width="111.4" height="18" rx="3" fill="#4f46e5"/>
+<text x="236.4" y="177.5" font-size="10.5" fill="#1f2937">4.8%</text>
+<rect x="120" y="179" width="41.8" height="5" rx="2" fill="#0d9488"/>
+<text x="166.8" y="186" font-size="9.5" fill="#0d9488">1.8%</text>
+<text x="112" y="205.5" text-anchor="end" font-size="11.5" fill="#1f2937">Kubernetes</text>
+<rect x="120" y="191" width="109.0" height="18" rx="3" fill="#4f46e5"/>
+<text x="234.0" y="204.5" font-size="10.5" fill="#1f2937">4.7%</text>
+<rect x="120" y="206" width="157.8" height="5" rx="2" fill="#0d9488"/>
+<text x="282.8" y="213" font-size="9.5" fill="#0d9488">6.8%</text>
+<text x="112" y="232.5" text-anchor="end" font-size="11.5" fill="#1f2937">Claude</text>
+<rect x="120" y="218" width="104.4" height="18" rx="3" fill="#4f46e5"/>
+<text x="229.4" y="231.5" font-size="10.5" fill="#1f2937">4.5%</text>
+<text x="112" y="259.5" text-anchor="end" font-size="11.5" fill="#1f2937">Prompt</text>
+<rect x="120" y="245" width="90.5" height="18" rx="3" fill="#4f46e5"/>
+<text x="215.5" y="258.5" font-size="10.5" fill="#1f2937">3.9%</text>
+<rect x="120" y="260" width="37.1" height="5" rx="2" fill="#0d9488"/>
+<text x="162.1" y="267" font-size="9.5" fill="#0d9488">1.6%</text>
+<text x="112" y="286.5" text-anchor="end" font-size="11.5" fill="#1f2937">Docker</text>
+<rect x="120" y="272" width="85.8" height="18" rx="3" fill="#4f46e5"/>
+<text x="210.8" y="285.5" font-size="10.5" fill="#1f2937">3.7%</text>
+<rect x="120" y="287" width="162.4" height="5" rx="2" fill="#0d9488"/>
+<text x="287.4" y="294" font-size="9.5" fill="#0d9488">7%</text>
+<text x="112" y="313.5" text-anchor="end" font-size="11.5" fill="#1f2937">TensorFlow</text>
+<rect x="120" y="299" width="81.2" height="18" rx="3" fill="#4f46e5"/>
+<text x="206.2" y="312.5" font-size="10.5" fill="#1f2937">3.5%</text>
+<rect x="120" y="314" width="37.1" height="5" rx="2" fill="#0d9488"/>
+<text x="162.1" y="321" font-size="9.5" fill="#0d9488">1.6%</text>
+<text x="112" y="340.5" text-anchor="end" font-size="11.5" fill="#1f2937">LangChain</text>
+<rect x="120" y="326" width="69.6" height="18" rx="3" fill="#4f46e5"/>
+<text x="194.6" y="339.5" font-size="10.5" fill="#1f2937">3%</text>
+<rect x="120" y="341" width="51.0" height="5" rx="2" fill="#0d9488"/>
+<text x="176.0" y="348" font-size="9.5" fill="#0d9488">2.2%</text>
+</svg><div class="cap">图 1 · 技能提及率 Top 12（双口径对照）</div></div>
+<p><strong>图 1 · 技能提及率 Top 12 双口径对照</strong>（数据见下表，HTML 版为条形图）</p>
+<p><strong>表 1a · AI 岗位内披露的 15 项（按 AI 岗位内提及率降序，附全量 JD 对照）</strong></p>
+<table><thead><tr><th>技能</th><th>AI 岗位内 <code>S5</code></th><th>全量 JD <code>S4</code></th></tr></thead><tbody><tr><td>Python</td><td><strong>18.8%</strong></td><td>18.6%</td></tr><tr><td>AWS</td><td>9.5%</td><td>11.3%</td></tr><tr><td>Azure</td><td>7.9%</td><td>8.2%</td></tr><tr><td>RAG</td><td><strong>7.6%</strong></td><td>1.6%</td></tr><tr><td>GCP</td><td>5.8%</td><td>—</td></tr><tr><td>PyTorch</td><td>4.8%</td><td>1.8%</td></tr><tr><td>Kubernetes</td><td>4.7%</td><td>6.8%</td></tr><tr><td>Claude</td><td>4.5%</td><td>—</td></tr><tr><td>Prompt</td><td><strong>3.9%</strong></td><td>1.6%</td></tr><tr><td>Docker</td><td>3.7%</td><td>7.0%</td></tr><tr><td>OpenAI</td><td>3.7%</td><td>0.9%（APIs）</td></tr><tr><td>TensorFlow</td><td>3.5%</td><td>1.6%</td></tr><tr><td>LangChain</td><td><strong>3.0%</strong></td><td>2.2%</td></tr><tr><td>TypeScript</td><td>3.0%</td><td>—</td></tr><tr><td>Embeddings</td><td>2.4%</td><td>1.0%（向量库）</td></tr></tbody></table>
+<p><strong>表 1b · 全量 JD 单列、但 AI 岗位内未披露的 5 项</strong></p>
+<table><thead><tr><th>技能</th><th>全量 JD <code>S4</code></th><th>AI 岗位内 <code>S5</code></th></tr></thead><tbody><tr><td>SQL</td><td>11.7%</td><td>未单列</td></tr><tr><td>LLM / 大模型</td><td>4.2%</td><td>未单列</td></tr><tr><td>机器学习</td><td>4.2%</td><td>未单列</td></tr><tr><td>生成式 AI</td><td>3.3%</td><td>未单列</td></tr><tr><td>Agentic AI</td><td>0.9%</td><td>未单列</td></tr></tbody></table>
+<blockquote><p>图注：AI Pulse（11,219 条 AI 岗位，<strong>2026-10-30 快照</strong>）与 Qarera（360,336 条全量 JD，2025-12 ~ 2026-06）。「—」表示该来源未单列此项。<strong>两来源分母不同，仅作方向对照，不可相减。</strong></p></blockquote>
+<p><strong>解读一</strong>：LLM 应用层的四个词（RAG / Prompt / LangChain / Embeddings）在 AI 岗位内的提及率全面高于全量 JD，而云基础设施（Docker、K8s、AWS、Azure）在 AI 岗位内反而更低——AI 岗位的稀缺项不是「会部署」，是「会把模型接进业务」。 <strong>解读二</strong>：绝大多数 JD 只写「AI」这个能力词（19.8%），具名框架分散在长尾，这解释了为什么技能归一化（把别名合成标准名）比换更大的词典更值钱 <code>S4</code>。</p>
+<h3 id="三学历与经验">三、学历与经验</h3>
+<div class="chartbox"><svg viewBox="0 0 680 233" width="100%" height="233" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="190.0" y1="18" x2="190.0" y2="211" stroke="#e5e7eb" stroke-width="1"/>
+<text x="190.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">0%</text>
+<line x1="287.5" y1="18" x2="287.5" y2="211" stroke="#e5e7eb" stroke-width="1"/>
+<text x="287.5" y="14" text-anchor="middle" font-size="10" fill="#6b7280">25%</text>
+<line x1="385.0" y1="18" x2="385.0" y2="211" stroke="#e5e7eb" stroke-width="1"/>
+<text x="385.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">50%</text>
+<line x1="482.5" y1="18" x2="482.5" y2="211" stroke="#e5e7eb" stroke-width="1"/>
+<text x="482.5" y="14" text-anchor="middle" font-size="10" fill="#6b7280">75%</text>
+<line x1="580.0" y1="18" x2="580.0" y2="211" stroke="#e5e7eb" stroke-width="1"/>
+<text x="580.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">100%</text>
+<text x="182" y="43.5" text-anchor="end" font-size="11.5" fill="#1f2937">算法岗 · 本科及以上</text>
+<rect x="190" y="29" width="351.0" height="18" rx="3" fill="#4f46e5"/>
+<text x="546.0" y="42.5" font-size="10.5" fill="#1f2937">≈90%</text>
+<text x="182" y="70.5" text-anchor="end" font-size="11.5" fill="#1f2937">算法岗 · 其中本科</text>
+<rect x="190" y="56" width="218.4" height="18" rx="3" fill="#4f46e5"/>
+<text x="413.4" y="69.5" font-size="10.5" fill="#1f2937">56%</text>
+<text x="182" y="97.5" text-anchor="end" font-size="11.5" fill="#1f2937">算法岗 · 其中硕博</text>
+<rect x="190" y="83" width="132.6" height="18" rx="3" fill="#4f46e5"/>
+<text x="327.6" y="96.5" font-size="10.5" fill="#1f2937">34%</text>
+<text x="182" y="124.5" text-anchor="end" font-size="11.5" fill="#1f2937">AI 产品经理 · 本科</text>
+<rect x="190" y="110" width="300.3" height="18" rx="3" fill="#4f46e5"/>
+<text x="495.3" y="123.5" font-size="10.5" fill="#1f2937">77%</text>
+<text x="182" y="151.5" text-anchor="end" font-size="11.5" fill="#1f2937">数据标注 · 大专</text>
+<rect x="190" y="137" width="175.5" height="18" rx="3" fill="#4f46e5"/>
+<text x="370.5" y="150.5" font-size="10.5" fill="#1f2937">45%</text>
+<text x="182" y="178.5" text-anchor="end" font-size="11.5" fill="#1f2937">AI 技术职位 · 硕博</text>
+<rect x="190" y="164" width="183.2" height="18" rx="3" fill="#ea580c"/>
+<text x="378.2" y="177.5" font-size="10.5" fill="#1f2937">46.98%</text>
+<text x="182" y="205.5" text-anchor="end" font-size="11.5" fill="#1f2937">整体职位 · 硕博（对照）</text>
+<rect x="190" y="191" width="17.4" height="18" rx="3" fill="#ea580c"/>
+<text x="212.4" y="204.5" font-size="10.5" fill="#1f2937">4.47%</text>
+</svg><div class="cap">图 2 · 学历门槛</div></div><div class="chartbox"><svg viewBox="0 0 680 179" width="100%" height="179" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="190.0" y1="18" x2="190.0" y2="157" stroke="#e5e7eb" stroke-width="1"/>
+<text x="190.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">0%</text>
+<line x1="275.0" y1="18" x2="275.0" y2="157" stroke="#e5e7eb" stroke-width="1"/>
+<text x="275.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">25%</text>
+<line x1="360.0" y1="18" x2="360.0" y2="157" stroke="#e5e7eb" stroke-width="1"/>
+<text x="360.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">50%</text>
+<line x1="445.0" y1="18" x2="445.0" y2="157" stroke="#e5e7eb" stroke-width="1"/>
+<text x="445.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">75%</text>
+<line x1="530.0" y1="18" x2="530.0" y2="157" stroke="#e5e7eb" stroke-width="1"/>
+<text x="530.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">100%</text>
+<text x="182" y="43.5" text-anchor="end" font-size="11.5" fill="#1f2937">算法岗 · 1–5 年合计</text>
+<rect x="190" y="29" width="204.0" height="18" rx="3" fill="#0d9488"/>
+<text x="399.0" y="42.5" font-size="10.5" fill="#1f2937">≈60%</text>
+<text x="182" y="70.5" text-anchor="end" font-size="11.5" fill="#1f2937">AI 产品经理 · 3–5 年</text>
+<rect x="190" y="56" width="125.8" height="18" rx="3" fill="#0d9488"/>
+<text x="320.8" y="69.5" font-size="10.5" fill="#1f2937">37%</text>
+<text x="182" y="97.5" text-anchor="end" font-size="11.5" fill="#1f2937">AI 产品经理 · 5–10 年</text>
+<rect x="190" y="83" width="68.0" height="18" rx="3" fill="#0d9488"/>
+<text x="263.0" y="96.5" font-size="10.5" fill="#1f2937">20%</text>
+<text x="182" y="124.5" text-anchor="end" font-size="11.5" fill="#1f2937">数据标注 · 无经验硬要求</text>
+<rect x="190" y="110" width="170.0" height="18" rx="3" fill="#0d9488"/>
+<text x="365.0" y="123.5" font-size="10.5" fill="#1f2937">&gt;50%</text>
+<text x="182" y="151.5" text-anchor="end" font-size="11.5" fill="#1f2937">求职者 · 35 岁以下</text>
+<rect x="190" y="137" width="289.0" height="18" rx="3" fill="#94a3b8"/>
+<text x="484.0" y="150.5" font-size="10.5" fill="#1f2937">80–90%（供给端）</text>
+</svg><div class="cap">图 3 · 经验要求分布</div></div>
+<p><strong>图 2 · 学历门槛（招聘要求占比）</strong></p>
+<table><thead><tr><th>项</th><th>数值</th><th>来源</th></tr></thead><tbody><tr><td>算法岗：本科及以上</td><td>近 90%</td><td>S1</td></tr><tr><td>算法岗：要求本科</td><td>56%</td><td>S1</td></tr><tr><td>算法岗：要求硕博</td><td>34%</td><td>S1</td></tr><tr><td>AI 产品经理：要求本科</td><td>77%</td><td>S1</td></tr><tr><td>数据标注/AI 训练师：要求大专</td><td>45%</td><td>S1</td></tr><tr><td>AI 技术职位：要求硕博</td><td>46.98%</td><td>S2</td></tr><tr><td>整体职位：要求硕博（对照）</td><td>4.47%</td><td>S2</td></tr><tr><td>算法岗<strong>求职者</strong>学历：本科 / 硕博</td><td>53% / 35%（<strong>供给端</strong>，非招聘要求）</td><td>S1</td></tr><tr><td>数据标注求职者：本科 / 大专</td><td>60% / 31%（供给端）</td><td>S1</td></tr><tr><td>AI 产品经理求职者：本科</td><td>64%（供给端）</td><td>S1</td></tr></tbody></table>
+<blockquote><p>图注：仅绘制来源明确披露的项；未披露项留空、不补值。「本科及以上 ≈90%」与「其中本科 56% / 硕博 34%」是<strong>包含关系</strong>，不是并列分类。</p><p>⚠️ 最后三行是<strong>求职者供给端</strong>数据，与上方的「招聘要求」是两个方向（企业要什么 vs 来投的人是什么学历），<strong>不参与图 2 绘制</strong>，仅作供需对照引用。</p><p>✅ <strong>已回 S1 原文核验（2026-11-03）</strong>：原文为「三类核心职业的求职者均以本科学历为主体，人工智能工程师（以算法工程师为主）、数据标注/AI 训练师、AI 产品经理的本科学历求职者占比分别为 53%、60%、64%。硕士及以上学历的求职者在人工智能工程师岗位中的占比达到 35%；大专学历求职者更倾向数据标注岗位，占比 31%」。</p><p>即 <strong>53 / 60 / 64 是三个不同岗位各自的本科占比，不是同一个数字的三种写法</strong>——此前「三种表述并存、待统一」的判断是误判，已更正。</p></blockquote>
+<p><strong>图 3 · 经验要求分布</strong></p>
+<table><thead><tr><th>岗位</th><th>经验要求</th><th>占比</th></tr></thead><tbody><tr><td>算法工程师</td><td>1–3 年 + 3–5 年 合计</td><td>近 60%</td></tr><tr><td>AI 产品经理</td><td>3–5 年</td><td>37%</td></tr><tr><td>AI 产品经理</td><td>5–10 年</td><td>20%</td></tr><tr><td>数据标注/AI 训练师</td><td>无硬性经验要求</td><td>超 50%</td></tr><tr><td>求职者侧（供给端）</td><td>35 岁以下占比</td><td>80–90%</td></tr></tbody></table>
+<blockquote><p>⚠️ 图注：最后一行是<strong>供给端</strong>数据（35 岁以下求职者占 8–9 成 <code>S1</code>），不参与图 3 绘制。另外「AI 产品经理 3–5 年 37% + 5–10 年 20% = 57%」才是正文反复引用的「57% 要求 3 年以上」，引用时请写全这个加总过程，别只报 37%。</p></blockquote>
+<p><strong>门槛在哪：学历筛算法岗，经验筛产品岗，两者都不筛的才是新人入口。</strong> AI 技术职位要求硕博的占 46.98%，是全市场（4.47%）的 10.5 倍 <code>S2</code>——⚠️ 注意这是<strong>猎聘「AI 技术职位」整体口径（含算法岗但不限于算法岗）</strong>，不能写成「算法岗 46.98%」；算法岗自身的硕博要求是 <strong>34%</strong> <code>S1</code>。AI 产品经理本科就够（77%），但 57% 要 3 年以上经验 <code>S1</code>；只有数据标注/AI 训练师同时放开学历（45% 大专）和经验（&gt;50% 不限）<code>S1</code>。换句话说，<strong>「应届友好」不是某类技能的组合，而是「学历与经验两个筛子同时不卡」的残余空间</strong>。</p>
+<h3 id="四应届岗差在哪">四、应届岗差在哪</h3>
+<div class="chartbox"><svg viewBox="0 0 680 466" width="100%" height="466" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="180.0" y1="22" x2="180.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="180.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">-3</text>
+<line x1="249.0" y1="22" x2="249.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="249.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">-2</text>
+<line x1="318.0" y1="22" x2="318.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="318.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">-1</text>
+<line x1="387.0" y1="22" x2="387.0" y2="448" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="387.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">0</text>
+<line x1="456.0" y1="22" x2="456.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="456.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">+1</text>
+<line x1="525.0" y1="22" x2="525.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="525.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">+2</text>
+<line x1="594.0" y1="22" x2="594.0" y2="448" stroke="#e5e7eb" stroke-width="1"/>
+<text x="594.0" y="28" text-anchor="middle" font-size="10" fill="#6b7280">+3</text>
+<text x="387.0" y="12" text-anchor="middle" font-size="10" fill="#6b7280">← 应届岗更少要求　｜　证据强度（非百分点）　｜　应届岗更常要求 →</text>
+<text x="160" y="51.0" text-anchor="end" font-size="11" fill="#1f2937">RAG</text>
+<rect x="387.0" y="38" width="207.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="588.0" y="50.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+3 S5·S6</text>
+<text x="160" y="77.0" text-anchor="end" font-size="11" fill="#1f2937">提示词 / Prompt</text>
+<rect x="387.0" y="64" width="207.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="588.0" y="76.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+3 S5·S6</text>
+<text x="160" y="103.0" text-anchor="end" font-size="11" fill="#1f2937">LangChain / LlamaIndex</text>
+<rect x="387.0" y="90" width="207.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="588.0" y="102.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+3 S5·S6</text>
+<text x="160" y="129.0" text-anchor="end" font-size="11" fill="#1f2937">Agent / Function Calling</text>
+<rect x="387.0" y="116" width="207.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="588.0" y="128.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+3 S6</text>
+<text x="160" y="155.0" text-anchor="end" font-size="11" fill="#1f2937">数据标注 / 清洗</text>
+<rect x="387.0" y="142" width="138.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="519.0" y="154.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+2 S1</text>
+<text x="160" y="181.0" text-anchor="end" font-size="11" fill="#1f2937">Python</text>
+<rect x="387.0" y="168" width="138.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="519.0" y="180.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+2 S1·S5</text>
+<text x="160" y="207.0" text-anchor="end" font-size="11" fill="#1f2937">低代码（Dify / Coze）</text>
+<rect x="387.0" y="194" width="138.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="519.0" y="206.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+2 S6</text>
+<text x="160" y="233.0" text-anchor="end" font-size="11" fill="#1f2937">评测 / 效果验证</text>
+<rect x="387.0" y="220" width="69.0" height="16" rx="3" fill="#059669" opacity="0.88"/>
+<text x="450.0" y="232.0" text-anchor="end" font-size="9.5" fill="#ffffff" font-weight="600">+1 S5</text>
+<text x="160" y="259.0" text-anchor="end" font-size="11" fill="#1f2937">C++</text>
+<rect x="318.0" y="246" width="69.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="324.0" y="258.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-1 S1</text>
+<text x="160" y="285.0" text-anchor="end" font-size="11" fill="#1f2937">强化学习 / RLHF</text>
+<rect x="249.0" y="272" width="138.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="255.0" y="284.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-2 S5·S8</text>
+<text x="160" y="311.0" text-anchor="end" font-size="11" fill="#1f2937">量化 / 推理优化</text>
+<rect x="249.0" y="298" width="138.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="255.0" y="310.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-2 S6·S8</text>
+<text x="160" y="337.0" text-anchor="end" font-size="11" fill="#1f2937">预训练 / 分布式训练</text>
+<rect x="180.0" y="324" width="207.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="186.0" y="336.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-3 S1·S8</text>
+<text x="160" y="363.0" text-anchor="end" font-size="11" fill="#1f2937">CUDA / 算子开发</text>
+<rect x="180.0" y="350" width="207.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="186.0" y="362.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-3 S8</text>
+<text x="160" y="389.0" text-anchor="end" font-size="11" fill="#1f2937">论文复现 / 顶会</text>
+<rect x="180.0" y="376" width="207.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="186.0" y="388.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-3 S5·S8</text>
+<text x="160" y="415.0" text-anchor="end" font-size="11" fill="#1f2937">硕博学历（筛子）</text>
+<rect x="180.0" y="402" width="207.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="186.0" y="414.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-3 S1·S2</text>
+<text x="160" y="441.0" text-anchor="end" font-size="11" fill="#1f2937">5–10 年经验（筛子）</text>
+<rect x="180.0" y="428" width="207.0" height="16" rx="3" fill="#dc2626" opacity="0.88"/>
+<text x="186.0" y="440.0" text-anchor="start" font-size="9.5" fill="#ffffff" font-weight="600">-3 S1</text>
+</svg><div class="cap">图 4 · 应届友好岗 vs 全部岗位（方向性编码，非实测百分点）</div></div>
+<blockquote><p><strong>⚠️ 图 4 数值为「证据强度编码（−3 ~ +3）」，不是百分点，也不是 200 条 JD 的实测频次差。</strong> 编码依据：该技能是否出现在校招/应届岗位技能清单 <code>S6</code>、是否被报告列为算法岗必备而应用岗不提 <code>S1</code>、是否伴随硕博/长经验要求 <code>S2</code>。补齐一手数据后应按框架 §4 重算真实差值。</p></blockquote>
+<p><strong>图 4 · 核心图：应届友好岗 vs 全部岗位的技能要求倾向（双向条形）</strong></p>
+<table><thead><tr><th>技能 / 条件</th><th>方向</th><th>强度</th><th>依据</th></tr></thead><tbody><tr><td>RAG</td><td>正</td><td>+3</td><td>S5 AI 岗位内 7.6%、S6 校招清单高频、S4 全量仅 1.6%</td></tr><tr><td>提示词 / Prompt</td><td>正</td><td>+3</td><td>S5 3.9%、S6 校招清单、S4 1.6%</td></tr><tr><td>LangChain / LlamaIndex</td><td>正</td><td>+3</td><td>S5 3.0%、S6 明确列出</td></tr><tr><td>Agent / 多智能体 / Function Calling</td><td>正</td><td>+3</td><td>S6 校招岗位主方向、S5 Agent 开发岗 1.2%</td></tr><tr><td>数据标注 / 数据清洗</td><td>正</td><td>+2</td><td>S1 数据标注岗 &gt;50% 无经验要求、45% 大专</td></tr><tr><td>Python</td><td>正</td><td>+2</td><td>S5 18.8%、S1 算法岗必备、S6 本科可投岗基础项</td></tr><tr><td>低代码工具（Dify / Coze）</td><td>正</td><td>+2</td><td>S6 校招清单</td></tr><tr><td>评测 / 效果验证</td><td>正</td><td>+1</td><td>S5 techniques 有评测项；应用层可回滚</td></tr><tr><td>C++</td><td>负</td><td>−1</td><td>S1 算法岗必备，应用岗少见</td></tr><tr><td>强化学习 / RLHF</td><td>负</td><td>−2</td><td>S5 RLHF 0.4%、S4 强化学习属模型方向</td></tr><tr><td>量化 / 推理优化</td><td>负</td><td>−2</td><td>S8 推理部署类；S6 仅少数「模型部署」校招岗涉及</td></tr><tr><td>预训练 / 分布式训练</td><td>负</td><td>−3</td><td>S1 算法岗核心、S8 训练技术；校招清单不出现</td></tr><tr><td>CUDA / 算子开发</td><td>负</td><td>−3</td><td>S8 训练技术类；伴随长经验与算力门槛</td></tr><tr><td>论文复现 / 顶会</td><td>负</td><td>−3</td><td>S8 业务能力类；研究型岗位要求（S5 Research 合计 4.8%）</td></tr><tr><td>硕博学历（筛子）</td><td>负</td><td>−3</td><td>S2 46.98%、S1 算法岗 34%</td></tr><tr><td>5–10 年经验（筛子）</td><td>负</td><td>−3</td><td>S1 AI 产品经理 20%、3–5 年 37%</td></tr></tbody></table>
+<blockquote><p><strong>实测锚点（可核验，非推断）</strong>：Qarera 36 万条 JD 中，<strong>实习岗的 AI 提及率 24.5% &gt; 入门级 19.8% ≈ 中高级 19.9% &lt; Principal 39.5%</strong> <code>S4</code>。它证明「新人岗对 AI 的要求并不更低」，只是要求的是不同层的 AI；同时也提醒：Principal 级的 39.5% 说明<strong>高阶岗要的是「用 AI 做技术决策」</strong>，与新人岗的「用 AI 做功能实现」不是同一件事。</p></blockquote>
+<p><strong>解读</strong>：正向一侧几乎全是<strong>应用层、编排层、数据层</strong>的词（RAG、Prompt、LangChain、Agent、标注），负向一侧几乎全是<strong>训练层、算力层、学术层</strong>的词（预训练、CUDA、分布式训练、论文复现），中间还夹着两个非技能筛子（硕博、5–10 年经验）。这条分界线不是「难 / 易」，而是<strong>「谁承担试错成本」</strong>：模型训练失败要烧掉算力和几周工期，错误不可逆、归因困难，企业只肯交给有履历背书的人；RAG 检索答错了改一句提示词、换一段切片就能回滚，产出可演示、可验收，正好是新人能独立交付的最小工作单元。更关键的是，中小微企业占 AI 行业招聘 80% 以上 <code>S1</code>，它们没有预算养一支算法团队，需求天然偏向「把现成大模型接进业务」——<strong>产业结构决定了应届岗的 skill 组合，而不是技能难度决定了岗位等级</strong>。这条结论也修正了 1.2 的预期：门槛低不等于技术含量低，实习岗 24.5% 的 AI 提及率就是反证。</p>
+<h3 id="五薪资">五、薪资</h3>
+<div class="chartbox"><svg viewBox="0 0 680 304" width="100%" height="304" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="190.0" y1="18" x2="190.0" y2="282" stroke="#e5e7eb" stroke-width="1"/>
+<text x="190.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">0</text>
+<line x1="287.5" y1="18" x2="287.5" y2="282" stroke="#e5e7eb" stroke-width="1"/>
+<text x="287.5" y="14" text-anchor="middle" font-size="10" fill="#6b7280">7500</text>
+<line x1="385.0" y1="18" x2="385.0" y2="282" stroke="#e5e7eb" stroke-width="1"/>
+<text x="385.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">15000</text>
+<line x1="482.5" y1="18" x2="482.5" y2="282" stroke="#e5e7eb" stroke-width="1"/>
+<text x="482.5" y="14" text-anchor="middle" font-size="10" fill="#6b7280">22500</text>
+<line x1="580.0" y1="18" x2="580.0" y2="282" stroke="#e5e7eb" stroke-width="1"/>
+<text x="580.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">30000</text>
+<text x="182" y="43.0" text-anchor="end" font-size="11.5" fill="#1f2937">杭州 · AI 产品经理</text>
+<rect x="190" y="29" width="372.6" height="17" rx="3" fill="#ea580c"/>
+<text x="567.6" y="42.0" font-size="10.5" fill="#1f2937">28,659</text>
+<text x="182" y="69.0" text-anchor="end" font-size="11.5" fill="#1f2937">上海 · 算法工程师</text>
+<rect x="190" y="55" width="349.4" height="17" rx="3" fill="#ea580c"/>
+<text x="544.4" y="68.0" font-size="10.5" fill="#1f2937">26,876</text>
+<text x="182" y="95.0" text-anchor="end" font-size="11.5" fill="#1f2937">深度学习（2月）</text>
+<rect x="190" y="81" width="312.2" height="17" rx="3" fill="#0d9488"/>
+<text x="507.2" y="94.0" font-size="10.5" fill="#1f2937">24,015</text>
+<text x="182" y="121.0" text-anchor="end" font-size="11.5" fill="#1f2937">算法工程师（2月）</text>
+<rect x="190" y="107" width="305.6" height="17" rx="3" fill="#0d9488"/>
+<text x="500.6" y="120.0" font-size="10.5" fill="#1f2937">23,510</text>
+<text x="182" y="147.0" text-anchor="end" font-size="11.5" fill="#1f2937">算法工程师</text>
+<rect x="190" y="133" width="278.7" height="17" rx="3" fill="#4f46e5"/>
+<text x="473.7" y="146.0" font-size="10.5" fill="#1f2937">21,439</text>
+<text x="182" y="173.0" text-anchor="end" font-size="11.5" fill="#1f2937">机器学习（2月）</text>
+<rect x="190" y="159" width="279.9" height="17" rx="3" fill="#0d9488"/>
+<text x="474.9" y="172.0" font-size="10.5" fill="#1f2937">21,534</text>
+<text x="182" y="199.0" text-anchor="end" font-size="11.5" fill="#1f2937">AI 产品经理</text>
+<rect x="190" y="185" width="253.0" height="17" rx="3" fill="#4f46e5"/>
+<text x="448.0" y="198.0" font-size="10.5" fill="#1f2937">19,459</text>
+<text x="182" y="225.0" text-anchor="end" font-size="11.5" fill="#1f2937">人工智能讲师（2月）</text>
+<rect x="190" y="211" width="205.3" height="17" rx="3" fill="#0d9488"/>
+<text x="400.3" y="224.0" font-size="10.5" fill="#1f2937">15,792</text>
+<text x="182" y="251.0" text-anchor="end" font-size="11.5" fill="#1f2937">北京 · 数据标注</text>
+<rect x="190" y="237" width="117.8" height="17" rx="3" fill="#ea580c"/>
+<text x="312.8" y="250.0" font-size="10.5" fill="#1f2937">9,063</text>
+<text x="182" y="277.0" text-anchor="end" font-size="11.5" fill="#1f2937">数据标注 / AI 训练师</text>
+<rect x="190" y="263" width="84.2" height="17" rx="3" fill="#4f46e5"/>
+<text x="279.2" y="276.0" font-size="10.5" fill="#1f2937">6,479</text>
+</svg><div class="cap">图 5 · 平均招聘月薪（元/月）</div></div>
+<p><strong>图 5 · 平均招聘月薪（元/月）</strong></p>
+<table><thead><tr><th>岗位 / 城市</th><th>平均月薪</th><th>来源</th></tr></thead><tbody><tr><td>杭州 · AI 产品经理</td><td>28,659</td><td>S1</td></tr><tr><td>上海 · 算法工程师</td><td>26,876</td><td>S1</td></tr><tr><td>深度学习（2025-02）</td><td>24,015</td><td>S3</td></tr><tr><td>算法工程师（2025-02）</td><td>23,510</td><td>S3</td></tr><tr><td>机器学习（2025-02）</td><td>21,534</td><td>S3</td></tr><tr><td>人工智能工程师（算法为主）</td><td>21,439</td><td>S1</td></tr><tr><td>AI 产品经理</td><td>19,459</td><td>S1</td></tr><tr><td>人工智能讲师（2025-02）</td><td>15,792</td><td>S3</td></tr><tr><td>北京 · 数据标注</td><td>9,063</td><td>S1</td></tr><tr><td>数据标注 / AI 训练师</td><td>6,479</td><td>S1</td></tr></tbody></table>
+<blockquote><p><code>口径警告</code> 来源给的是「平均招聘月薪」，非框架所要求的「中位数」；三组数据时间窗与岗位口径不同，不可合并求平均。</p></blockquote>
+<p><strong>一句结论</strong>：图 5 中数值最高的是<strong>杭州 AI 产品经理 28,659 元</strong>，但那是城市峰值、且该岗 57% 要 3 年以上经验；若按三大核心岗位的<strong>整体平均</strong>比，最高的是人工智能工程师（算法为主）<strong>21,439 元</strong> <code>S1</code>——而这恰好也是应届友好度最低的岗位。对应届最开放的数据标注岗只有 <strong>6,479 元</strong>。<strong>「门槛低」和「薪资高」在这个市场里是负相关的，新人入口的代价直接写在价签上</strong> <code>S1</code> <code>S3</code>。</p>
+<blockquote><p>⚠️ 原稿写「薪资最高的岗位（算法 21,439 元）」与图 5 首行「杭州 AI 产品经理 28,659 元」自相矛盾。修正口径：<strong>跨岗位比较一律用「整体平均月薪」，城市峰值只能同岗位内比较</strong>，不能用杭州产品的峰值去压算法的均值。</p></blockquote>
+<h3 id="六地域分布">六、地域分布</h3>
+<div class="chartbox"><svg viewBox="0 0 680 206" width="100%" height="206" style="display:block" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, Hiragino Sans GB, sans-serif">
+<line x1="190.0" y1="18" x2="190.0" y2="184" stroke="#e5e7eb" stroke-width="1"/>
+<text x="190.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">0%</text>
+<line x1="290.0" y1="18" x2="290.0" y2="184" stroke="#e5e7eb" stroke-width="1"/>
+<text x="290.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">7%</text>
+<line x1="390.0" y1="18" x2="390.0" y2="184" stroke="#e5e7eb" stroke-width="1"/>
+<text x="390.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">14%</text>
+<line x1="490.0" y1="18" x2="490.0" y2="184" stroke="#e5e7eb" stroke-width="1"/>
+<text x="490.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">21%</text>
+<line x1="590.0" y1="18" x2="590.0" y2="184" stroke="#e5e7eb" stroke-width="1"/>
+<text x="590.0" y="14" text-anchor="middle" font-size="10" fill="#6b7280">28%</text>
+<text x="182" y="43.5" text-anchor="end" font-size="11.5" fill="#1f2937">北京 · AI 产品经理</text>
+<rect x="190" y="29" width="361.4" height="18" rx="3" fill="#ea580c"/>
+<text x="556.4" y="42.5" font-size="10.5" fill="#1f2937">25.3%</text>
+<text x="182" y="70.5" text-anchor="end" font-size="11.5" fill="#1f2937">北京 · 算法工程师</text>
+<rect x="190" y="56" width="265.7" height="18" rx="3" fill="#4f46e5"/>
+<text x="460.7" y="69.5" font-size="10.5" fill="#1f2937">18.6%</text>
+<text x="182" y="97.5" text-anchor="end" font-size="11.5" fill="#1f2937">北京 · 数据标注</text>
+<rect x="190" y="83" width="194.3" height="18" rx="3" fill="#0d9488"/>
+<text x="389.3" y="96.5" font-size="10.5" fill="#1f2937">13.6%</text>
+<text x="182" y="124.5" text-anchor="end" font-size="11.5" fill="#1f2937">西安 · 数据标注</text>
+<rect x="190" y="110" width="138.6" height="18" rx="3" fill="#0d9488"/>
+<text x="333.6" y="123.5" font-size="10.5" fill="#1f2937">9.7%</text>
+<text x="182" y="151.5" text-anchor="end" font-size="11.5" fill="#1f2937">深圳 · 算法工程师</text>
+<rect x="190" y="137" width="128.6" height="18" rx="3" fill="#4f46e5"/>
+<text x="323.6" y="150.5" font-size="10.5" fill="#1f2937">9%</text>
+<text x="182" y="178.5" text-anchor="end" font-size="11.5" fill="#1f2937">杭州 · AI 产品经理</text>
+<rect x="190" y="164" width="72.9" height="18" rx="3" fill="#ea580c"/>
+<text x="267.9" y="177.5" font-size="10.5" fill="#1f2937">5.1%</text>
+</svg><div class="cap">图 6 · 城市分布（招聘量占比）</div></div>
+<p><strong>图 6a · 城市招聘量占比（2025 前三季度，同一口径可比）</strong> <code>S1</code></p>
+<table><thead><tr><th>城市</th><th>算法工程师</th><th>数据标注/AI 训练师</th><th>AI 产品经理</th></tr></thead><tbody><tr><td>北京</td><td><strong>18.6%（第 1）</strong></td><td><strong>13.6%（第 1）</strong></td><td><strong>25.3%（第 1）</strong></td></tr><tr><td>深圳</td><td>9.0%（第 2）</td><td>—</td><td>前列（未披露具体值）</td></tr><tr><td>西安</td><td>—</td><td>9.7%（第 2）</td><td>—</td></tr><tr><td>杭州</td><td>—</td><td>—</td><td>5.1%</td></tr></tbody></table>
+<p><strong>图 6b · 城市薪资峰值（另一口径，不可与占比混排）</strong> <code>S1</code></p>
+<table><thead><tr><th>城市</th><th>岗位</th><th>平均招聘月薪</th></tr></thead><tbody><tr><td>杭州</td><td>AI 产品经理</td><td>28,659 元（该类岗位全国最高）</td></tr><tr><td>上海</td><td>人工智能工程师（算法为主）</td><td>26,876 元（该类岗位全国最高）</td></tr><tr><td>北京</td><td>数据标注 / AI 训练师</td><td>9,063 元（该类岗位全国最高）</td></tr></tbody></table>
+<blockquote><p><strong>结论</strong>：北京在三类核心岗位的<strong>招聘量</strong>上均列全国第一，与框架「北京 80 / 200 条」的配额方向一致；深圳、西安、杭州是各自岗位的第二梯队。但<strong>招聘量第一 ≠ 薪资第一</strong>——薪资峰值分散在杭州（产品）、上海（算法）、北京（标注），讲的时候别把两件事混为一谈。</p></blockquote>
+<h3 id="七我的解读">七、我的解读</h3>
+<h4>1. 最反直觉的一条：AI 提及率随资历上升，不是下降</h4>
+<p>我原本以为「对应届友好」等于「技术要求放宽、少提 AI」。数据只对了一半。</p>
+<p>按 <code>S4</code> 的职级拆分，AI 提及率从入门级 <strong>19.77%</strong> 起步，实习 24.49%、Director 24.52%、VP 27.31%，一路升到 Principal <strong>39.51%</strong>。<strong>整体随资历上升，唯一的反转是实习岗高于入门级。</strong>（这里更正一版原稿的说法：曾写成「实习仅低于 Principal」，回原文核对后不成立——Director 与 VP 都高于实习。）</p>
+<p>所以准确的说法是：<strong>AI 不是新人的入场券，而是资历的放大器。</strong> 层级越高，越需要在简历上写明 AI 能力。</p>
+<p>但另一半预期是对的：新人面对的不是「要求更低的 AI」，而是<strong>另一种 AI</strong>。预训练、CUDA、分布式训练、论文复现在应届友好岗里全是负向信号；而 RAG、提示词、LangChain 在校招岗位清单里高频出现，在 36 万条全量 JD 里却只有 1.6%–2.2%，被 AI 岗位放大了 1.4–4.8 倍 <code>S4</code> <code>S6</code>。<strong>同一个行业，「造模型」和「用模型」之间隔着一道几乎不重叠的技能分界。</strong></p>
+<p>我最初的错误在于把「门槛」当成一个标量。它其实是两个维度：<strong>学历与经验的筛子</strong>，加上<strong>技能层的分工</strong>。前者决定你能不能进门，后者决定门里让你干什么。</p>
+<h4>2. 新人为什么被分到可回滚的那一段</h4>
+<p>成本结构与风险归属。</p>
+<p>预训练和分布式训练的试错要烧掉昂贵算力与数周工期，失败难以归因、不可逆，企业只能用「硕博学历 + 3 年以上经验」这类低成本信号做风险筛查——这正是猎聘口径下 AI 技术职位 <strong>46.98%</strong> 要求硕博（整体职位仅 4.47%）的由来，也是智联口径下算法岗 34% 硕博、近六成要求 1–5 年经验的原因 <code>S1</code> <code>S2</code>。</p>
+<p>反过来，RAG、提示词、Agent 编排是「调用现成模型组装业务」：单次错误可回滚、结果可演示、验收标准清晰，边际成本几乎为零。<strong>它是新人能独立交付的最小工作单元。</strong></p>
+<p>再叠加供给侧：开源框架和低代码工具把接入门槛压低之后，占 AI 招聘八成以上的中小微企业根本不设算法团队，它们要的是「能把大模型用起来的人」 <code>S1</code>。</p>
+<p><strong>所以不是热度创造了应届岗，是「谁承担试错成本」把产业链切成了两段，新人被分配到了可回滚的那一段。</strong></p>
+<p>这条推论有一个让人不太舒服的后果：<strong>可回滚，也意味着可替代。</strong> 三年后要往上走，必须从「组装」走到「判断该组装什么」，否则会一直停在这一层。</p>
+<h4>3. 这些数字能推多远</h4>
+<p>不能推太远。完整的九条写在附录 B，这里只点最关键的：</p>
+<p><strong>分母不统一。</strong> 智联给的是平均月薪和职位占比，猎聘给的是学历要求占比，Qarera 是 36 万条全量 JD 的技能提及率，AI Pulse 是 1.1 万条 AI 岗位内的提及率——四者<strong>不能相加、不能相减</strong>，图 1 的并列只是方向对照。再加上核心图图 4 是证据强度编码而非实测百分点，以及「应届友好」的定义一变占比就从 15–25% 摆到 30–40%，这三条合起来的意思很明确：<strong>本报告适合论证选题和面试讲述，不适合被当作市场定量结论引用。</strong></p>
+<h4>4. 所以接下来三个月</h4>
+<ul><li><strong>第 1 月</strong>：Python 加一套 LLM 应用栈（LangChain 或 LlamaIndex + 一个向量库），做一个能演示的 RAG 知识库。重点在检索召回、切片策略、幻觉与评测，不碰微调。</li><li><strong>第 2 月</strong>：加 Agent / Function Calling，用 FastAPI 封成服务，补 Docker、Linux、Git。产出 1 个端到端项目：有 README、能部署、附一节「失败案例与修复记录」。面试时「为什么这样切分」比「跑通了」值钱。</li><li><strong>第 3 月</strong>：按 §2.1 的配额真采 200 条 JD（重点补应用开发 70 条），把图 4 换成实测差值，重跑 <code>run_all.py</code>，写一份「预期 vs 实际」复盘；同时投 AI 应用开发 / Agent 开发岗。</li></ul>
+<p><strong>明确不做</strong>：预训练、CUDA、分布式训练、论文复现。图 4 显示它们在应届友好岗里是负向信号，三个月投入的产出比最低。</p>
+<h3 id="八局限">八、局限</h3>
+<p>本版最大的局限是<strong>方法论替换</strong>：框架设计的是「200 条一手 JD → 归一化 → 频次统计」，而这里是「7 份二手报告 + 1 份内部口径 → 口径对齐 → 证据综合」，二者证据等级不同，结论只支持方向判断、不支持统计推断。具体有三：一是分母不一致，四份主要来源的百分比不可合并；二是公开报告披露的是聚合结果而非原始 JD，无法复算「应届友好」标签，占比为推算值；三是国内数据主要来自 2025 年、海外数据更新到 2026 年 11 月，存在时间错位，且平台偏差（智联 / 猎聘 vs Indeed / LinkedIn）无法消除。<strong>因此本报告适合作为选题论证与面试讲述的底稿，不足以作为市场定量结论引用。</strong>（完整明细见附录 B，共 9 条）</p>
+<h3 id="九图表清单">九、图表清单</h3>
+<ul><li>✅ 图 1 技能 Top 12 双口径对照条形图（§5 二）</li><li>✅ 图 2 学历分布条形图（§5 三）</li><li>✅ 图 3 经验分布条形图（§5 三）</li><li>⚠️ <strong>图 4 应届 vs 全部 双向条形图 —— Phase 1 临时版（方向性编码，非实测）</strong>（§5 四）。<strong>Phase 2 必须换成真实百分点差，否则核心结论不成立</strong></li><li>✅ 图 5 平均招聘月薪条形图（§5 五）</li><li>✅ 图 6 城市分布条形图（§5 六，已拆为占比 / 薪资两张表）</li></ul>
+<hr>
+<h2 id="6--里程碑检查表phase-1-完成情况">6 · 里程碑检查表（Phase 1 完成情况）</h2>
+<blockquote><p>⚠️ 下表勾的是 <strong>Phase 1（桌面研究）</strong>。Phase 2 的 200 条采集尚未开始，对应项标 🔄 / ⏸，<strong>不能算完成</strong>。</p></blockquote>
+<table><thead><tr><th>阶段</th><th>框架检查项</th><th>本版状态</th></tr></thead><tbody><tr><td>第 1 周</td><td>写下 1.2 的假设</td><td>✅ 已完成（12 个空全填，含预期 / 实际 / 差异原因）</td></tr><tr><td>第 1 周</td><td>采完 100 条</td><td>🔄 替换为：采完 7 份公开资料并交叉验证</td></tr><tr><td>第 1 周</td><td>跑过一次 <code>check_data.py</code>，无严重 ⚠️</td><td>🔄 替换为：按 §2.5 完成六维度覆盖检查与双出处交叉验证</td></tr><tr><td>第 2 周</td><td>采完 200 条 / 数据无重复、无空技能</td><td>⏸ 未执行（本版为桌面研究，方案保留于 §2.1–2.2）</td></tr><tr><td>第 2 周</td><td>跑 <code>run_all.py</code> 生成第一版报告</td><td>🔄 替换为：生成 HTML 报告 + Markdown 版</td></tr><tr><td>第 2 周</td><td>—</td><td>✅ 新增：建立 S1–S8 来源编号与逐数字标注</td></tr><tr><td>第 3 周</td><td>调整技能词典（补行业黑话）</td><td>✅ 已对齐 S8 词典；建议补录 Dify、Coze、Function Calling、VLM/VLA、多智能体</td></tr><tr><td>第 3 周</td><td>重跑，确认核心图结论稳定</td><td>🔄 替换为：核心图做严格 / 宽松双口径敏感性分析（§3）</td></tr><tr><td>第 3 周</td><td>写完「我的解读」四问</td><td>✅ 已完成（§5 七）</td></tr><tr><td>第 4 周</td><td>补完局限一节</td><td>✅ 已完成（§5 七 + 附录 B 共 7 条）</td></tr><tr><td>第 4 周</td><td>报告导出 PDF / 截图</td><td>✅ HTML 已做打印样式，浏览器「打印 → 另存为 PDF」即可</td></tr><tr><td>第 4 周</td><td>整理成一页总结（简历用）</td><td>✅ 见下方</td></tr><tr><td>第 4 周</td><td>准备面试讲述稿（附录 A）</td><td>✅ 已完成，两处【填】已补齐</td></tr></tbody></table>
+<blockquote><p>✅ <strong>一页总结（可直接放简历 / 面试）</strong></p><p>汇总 7 份公开资料 + 1 份内部口径（含 36 万条 JD 开放数据集、智联与猎聘两大平台报告），分析 AI 岗位的技能、学历、经验与薪资结构，发现 <strong>AI 技术职位硕博要求 46.98% 是全市场（4.47%）的 10.5 倍</strong>，而<strong>应届友好岗集中在 RAG / 提示词 / LangChain / Agent 等应用层</strong>，预训练、CUDA、分布式训练、论文复现几乎不出现；按自定口径推算应届友好岗仅 15–25%，且薪资与门槛呈负相关。主动披露了二手资料口径不一致、核心图为方向性编码、定义变更导致占比摆动近一倍等局限；并在回原文核验后主动修正了「实习岗 AI 提及率最高」这一处错误表述。</p></blockquote>
+<hr>
+<h2 id="7--交付清单">7 · 交付清单</h2>
+<table><thead><tr><th>交付物</th><th>位置</th><th>用途</th></tr></thead><tbody><tr><td>分析报告</td><td><code>output/AI岗位招聘数据分析_填充版报告.html</code></td><td>作业 / 作品集 / 打印 PDF（含 6 张内联 SVG 图）</td></tr><tr><td>Markdown 填充版</td><td><code>AI岗位招聘数据分析_填充版.md</code>（本文件）</td><td>编辑、转 Word、交作业</td></tr><tr><td>原始数据</td><td><code>data/jobs.csv</code>（<strong>本版未生成</strong>）</td><td>升级成一手数据版时按 §2.1 采集</td></tr><tr><td>分析表格</td><td><code>output/tables/*.csv</code>（项目原有，DEMO 数据）</td><td>⚠️ 由模拟数据生成，<strong>不可作为本报告结论</strong></td></tr><tr><td>一页总结</td><td>§6 末尾</td><td>简历 / 面试</td></tr><tr><td>代码</td><td><code>src/*.py</code> + <code>run_all.py</code>（项目原有）</td><td>补齐真实数据后一键重跑</td></tr><tr><td>资料来源与数字摘录</td><td>附录 D / E</td><td>核验、答辩、复算</td></tr></tbody></table>
+<blockquote><p>⚠️ <code>output/report.html</code> 与 <code>output/tables/</code> 是项目原有脚本基于 <code>sample_jobs_DEMO.csv</code> <strong>模拟数据</strong>生成的，README 已注明「不能当结论」。本版报告未使用其中任何数字。</p><p>📁 <strong>两个副本的关系：</strong> 桌面 <code>AI岗位招聘数据分析_填充版.md</code> 是分发/打印用；项目 <code>output/AI岗位招聘数据分析_填充版.md</code> 是与代码同目录的工作版。<strong>改内容请改项目版，再覆盖到桌面</strong>，避免两份分叉。</p></blockquote>
+<hr>
+<h2 id="附录-a--面试讲述稿模板2-分钟">附录 A · 面试讲述稿模板（2 分钟）</h2>
+<blockquote><p>✅ 两处【填】已补齐，可直接照着讲。</p></blockquote>
+<p><strong>背景（20 秒）</strong></p>
+<blockquote><p>我在准备找 AI 方向的实习，但发现网上关于「应届生能投什么岗」的信息很零散，所以想自己做一次数据看看。</p></blockquote>
+<p><strong>任务（15 秒）</strong></p>
+<blockquote><p>目标很明确：回答三个问题——要什么技能、什么学历、哪些岗对应届友好。第三个是重点。</p></blockquote>
+<p><strong>行动（60 秒，重点）</strong></p>
+<blockquote><p>这一版我先做了桌面研究：找了 7 份公开资料（外加一份项目自带的技能词典口径），其中国内是智联和猎聘的年度人才报告、Plus 新华社的春招报道，海外有一份 36 万条 JD 的开放数据集和一份 1.1 万条活跃 AI 岗位的实时统计；每个数字都标了来源编号。<strong>最难的不是找数据，是口径对齐</strong>——四份来源的分母完全不同：一份是「平均招聘月薪」，一份是「职位学历要求占比」，一份是「全量 JD 的技能提及率」，还有一份是「AI 岗位内的提及率」。它们不能相加、不能求差，所以我没硬凑一个总样本，而是把可比的和不可比的分开画，并在报告里明确写出来。<strong>技能归一化</strong>同样关键，「大模型 / LLM / 大语言模型」「LangChain / LangGraph」得合成一个词，否则统计全是噪声，项目里有一张 50 项带别名的词表负责这件事。</p></blockquote>
+<p><strong>结果（20 秒）</strong></p>
+<blockquote><p>✅ <strong>核心发现是</strong>：企业不是不给应届生 AI 岗，而是<strong>只给「用大模型」的岗、不给「造大模型」的岗</strong>——应届友好岗集中在 RAG、提示词、LangChain、Agent 这些应用层，而预训练、CUDA、分布式训练、论文复现在这些岗位里几乎不出现；一个佐证是：实习岗的 AI 提及率 24.5% 高于入门级的 19.8%——而入门级其实是全表最低，最高的是 Director 24.5%、VP 27.3%、Principal 39.5%，说明基层执行岗与高层决策岗要的 AI 根本不是同一件事。</p></blockquote>
+<p><strong>反思（15 秒）</strong></p>
+<blockquote><p>局限是这一版用的是二手资料、样本口径不统一、单一时间窗，而且「应届友好」是我自己定的定义——换成宽松口径，占比能从 15–25% 摆到 30–40%。✅ <strong>如果重做，我会</strong>把二手资料换成自己按配额采的 200 条一手 JD，预先把「应届友好」写成 2–3 个可选定义做敏感性分析，再隔三个月复采一次做时间对比，把方向性判断变成可复算的实测差值。</p></blockquote>
+<hr>
+<h2 id="附录-b--局限自查清单9-条">附录 B · 局限自查清单（9 条）</h2>
+<blockquote><p>✅ 已写满 9 条（原 7 条，本次核验后新增 2 条）。</p></blockquote>
+<ol><li>✅ <strong>本版无一手数据</strong>：框架设计的 200 条 JD 采集未执行，全部结论为二手资料综合，证据等级低于原方案，只支持方向判断、不支持统计推断。</li><li>✅ <strong>口径不可合并</strong>：智联（平均月薪 / 职位占比）、猎聘（学历要求占比）、Qarera（36 万条全量 JD 提及率）、AI Pulse（1.1 万条 AI 岗位内提及率）分母不同，图 1 的并列仅作方向对照，不可求差或求平均。</li><li>✅ <strong>核心图为方向性编码</strong>：图 4 的 −3 ~ +3 是多源证据强度，不是百分点，也不是「应届 vs 全部」的实测频次差。</li><li>✅ <strong>「应届友好」定义人为设定</strong>：严格口径 15–25%，宽松口径 30–40%，近一倍摆动；定义一变结论就变（§3）。</li><li>✅ <strong>单一时间窗口且存在时间错位</strong>：国内资料主要为 2025 年前三季度 / 2025 春招，海外资料更新到 2026-11，不能据此谈趋势；框架 1.3 已明确「不做纵向趋势」。</li><li>✅ <strong>平台偏差</strong>：国内仅覆盖智联、猎聘及媒体转述，海外为 Indeed / LinkedIn / Greenhouse / Lever，均不代表整个市场；C 级来源（S6/S7）为行业汇编与聚合站，只作定性佐证。</li><li>✅ <strong>聚合结果不可复算 + 薪资口径降级</strong>：公开报告只给聚合数字，无法还原单条 JD 复核；薪资为「平均招聘月薪」而非框架要求的「中位数」，且未披露薪资面议岗位的占比。</li><li>✅ <strong>动态来源未锁快照</strong>（本次核验新增）：S5（AI Pulse）页面每周刷新，2026-11-02 复核时数字已从 11,219 条 / 17.6% / 142,049 条变为 11,030 条 / 18.7% / 133,179 条。本报告统一锁定 <strong>2026-10-30 前后快照</strong>；任何引用若不带快照时点，事后都无法核验。</li><li>✅ <strong>「提及」≠「要求」，「实习」≠「应届友好」</strong>（本次核验新增）：S4 的职级数据统计的是「岗位描述中<strong>提及</strong> AI / 生成式 AI」，S5 统计的是「AI/ML 岗位内某工具被提及」，二者都不是「招聘硬性要求」；且「实习」是职级标签，与本报告自定义的「应届友好」（经验 ≤1 年 且 学历 ≤本科）不是同一概念，不可互换论证。</li></ol>
+<blockquote><p>另：框架原有三项（样本量、手动采集主观性、脱敏掩盖行业差异）在一手数据版中依然成立，升级时应保留。</p><p>📌 <strong>本次核验还修正了一处已写进正文的事实错误</strong>：原稿称「实习岗 AI 提及率仅低于 Principal 级」，核 S4 原始职级表后实为第 4 位（Director 24.52%、VP 27.31% 均更高）。已在 §0、§1.2、§5 一④、§5 七、附录 A、附录 E 六处同步修正。<strong>结论强度从「新人岗最要求 AI」下调为「AI 提及率随资历上升，唯一例外是实习岗高于入门级」。</strong></p></blockquote>
+<hr>
+<h2 id="附录-c--常见问题">附录 C · 常见问题</h2>
+<p><strong>Q：采不到 200 条怎么办？</strong> A：120 条也能出结论。<strong>宁要 120 条干净的，不要 200 条凑数的。</strong> 在局限里写明样本量就行。</p>
+<p><strong>Q：技能词典不够用怎么办？</strong> A：直接编辑 <code>data/skills_dict.csv</code>，加一行「标准名,类别,别名1|别名2」。加完重跑。你遇到的行业黑话越多，词典越值钱。本版建议补录：Dify、Coze、Function Calling、VLM/VLA、多智能体协作、向量库、评测。</p>
+<p><strong>Q：报告跑出来结论和我预期反了怎么办？</strong> A：<strong>这是好事，写进报告。</strong> 预测错误 + 解释为什么会错，比「我早就知道」有价值得多——本版 1.2 有四条预期，三条被修正。</p>
+<p><strong>Q：要不要做成 PPT？</strong> A：先做完 HTML 报告。PPT 是锦上添花，别本末倒置。</p>
+<p><strong>Q：代码要传到 GitHub 吗？</strong> A：要。这是你唯一能被验证的能力证明。记得写 README。</p>
+<p><strong>✅ 新增 Q：用二手资料代替 200 条采集，算不算偷懒 / 作弊？</strong> A：取决于<strong>有没有诚实标注</strong>。作为「选题论证、面试讲述底稿、快速验证假设」，桌面研究是完全正当的研究方法，而且比硬凑 200 条脏数据更专业；但<strong>不能把它包装成自己采的一手数据分析</strong>。本版的处理是：卷首醒目标注方法论替换、每个数字挂来源编号、推断值单独打标签、核心图注明非实测、局限写满 7 条。如果作业明确要求「200 条原始数据」，那就按 §2.1–2.2 老老实实采，本版可作为前期假设与报告结构的底稿。</p>
+<p><strong>✅ 新增 Q：怎么把这一版升级成框架要求的完整版？</strong> A：四步 —— ① 按 §2.1 配额与 §2.2 排期采集 200 条，存成 <code>data/jobs.csv</code>；② <code>python run_all.py</code> 一键重跑，得到真实的 <code>output/tables/*.csv</code> 与 <code>report.html</code>；③ 用真实的「应届友好 vs 全部」技能占比差<strong>替换图 4</strong>，把方向性编码换成实测百分点；④ 用真实结果覆盖 1.2 的「实际结果」列，重写差异原因与 §5 七的「最意外发现」。届时可删掉本版的口径警告与推算区间。</p>
+<hr>
+<h2 id="附录-d--资料来源清单-s1s8">附录 D · 资料来源清单 S1–S8</h2>
+<table><thead><tr><th>#</th><th>标题 / 机构</th><th>时间</th><th>链接</th><th>本报告引用的具体数字</th></tr></thead><tbody><tr><td>S1</td><td>智联研究院《2025年人工智能产业人才发展报告》（智联招聘）</td><td>2025-10-24</td><td><a href="https://21jingji.com/article/20251024/herald/99f5deac46722328df0354104c860ed0.html">21经济网全文</a> · <a href="https://tidenews.com.cn/news.html?id=3286013">潮新闻摘要</a> · <a href="https://baike.baidu.com/item/2025%E5%B9%B4%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E4%BA%A7%E4%B8%9A%E4%BA%BA%E6%89%8D%E5%8F%91%E5%B1%95%E6%8A%A5%E5%91%8A/67878736">百度百科词条</a></td><td>算法岗 56% 本科 / 34% 硕博 / 近 90% 本科以上；AI 产品 77% 本科、3–5 年 37%、5–10 年 20%；数据标注 45% 大专、&gt;50% 无经验要求；月薪 21,439 / 19,459 / 6,479 元；城市 18.6% / 13.6% / 25.3% / 9.0% / 9.7% / 5.1%；中小微企业 &gt;80%；上海 26,876、杭州 28,659、北京 9,063；求职者 35 岁以下 8–9 成；求职者本科学历占比：算法岗 53%、数据标注 60%、AI 产品经理 64%，算法岗硕博 35%、数据标注大专 31%（均供给端，已回原文核验）；招聘增速 11%（Q3）/ 3%（前三季度）、AI 产品经理 +178%</td></tr><tr><td>S2</td><td>猎聘大数据研究院《2025 AI 技术人才供需洞察报告》</td><td>2025-03（窗口 2024-02~2025-01）</td><td><a href="https://www.dldj.gov.cn/art/2025/3/27/art_9274_2431595.html">新华社稿转载</a> · <a href="http://epaper.shaoxing.com.cn/srdb/pc/content/202504/16/content_582404.html">绍兴日报</a> · <a href="https://ima.qq.com/wiki/?shareId=7f57f130d3c631ad2b3a64c610316ef0d8496f3c3be23357b3b1b1400a4e4a62">报告库节选</a></td><td>AI 技术职位硕博要求 46.98%（硕士 42.72% + 博士 4.27%），整体职位 4.47%；算法工程师占 AI 技术岗 67.17%；职位同比 +6.53%；从业者专业 TOP4</td></tr><tr><td>S3</td><td>新华社《AI 热潮中，哪类人才最紧缺？》及党报转载</td><td>2025-03</td><td><a href="https://epaper.guanhai.com.cn/conpaper/qdrb/resfile/2025-03-27/05/qdrb2025032705.pdf">青岛日报 PDF</a> · <a href="https://www.sohu.com/a/876344546_121372103">搜狐转载</a> · <a href="https://www.0891news.com/lsrb/pad/content/202503/27/c198498.html">拉萨日报</a></td><td>2025 年 2 月<strong>平均招聘月薪</strong>：算法工程师 23,510 元、机器学习 21,534 元、深度学习 24,015 元；⚠️ 同一段另有<strong>招聘量同比增速</strong> 46.8% / 40.1% / 5.1% —— <strong>这是「岗位招聘量」的增速，不是薪资增速，两者不可写在一起</strong>；人工智能讲师平均月薪 15,792 元，其<strong>招聘职位数</strong>同比 +112.4%；数据标注招聘需求 +50%；AI 领域求职人数同比 +200%；杭州招聘会 830 家 / 2.1 万岗位（半数涉 AI）；麦肯锡预测 2030 年中国 AI 专业人才需求 600 万、缺口 400 万</td></tr><tr><td>S4</td><td>Qarera《The Most In-Demand Skills of 2026》</td><td>2025-12-27 ~ 2026-06-16</td><td><a href="https://www.qarera.com/reports/most-in-demand-skills-2026">报告页</a> · 数据集 DOI <a href="https://doi.org/10.5281/zenodo.21204423">10.5281/zenodo.21204423</a>（CC BY 4.0）</td><td>360,336 条 JD；Top 技能 Communication 23.1% / AI 19.8% / Python 18.6% / SQL 11.7% / AWS 11.3% / Java 10.5% / Docker 7.0% / K8s 6.8%；具名 AI 技能 LLM 4.2%、ML 4.2%、生成式 AI 3.3%、LangChain 2.2%、PyTorch 1.8%、Prompt 1.6%、RAG 1.6%、TF 1.6%、Agentic 0.9%；按职级 AI 提及率（<strong>完整八级</strong>）：Principal 39.51% &gt; VP 27.31% &gt; Director 24.52% &gt; <strong>实习 24.49%</strong> &gt; Executive 19.94% &gt; 中高级 19.89%（316,258 条）&gt; <strong>入门级 19.77%</strong> &gt; 未标注 0%（2 条）；远程岗 LLM 要求 3.2×</td></tr><tr><td>S5</td><td>AI Pulse《AI Job Market Intelligence》</td><td><strong>快照 2026-10-30 前后</strong>（页面每周刷新，数字会漂移；2026-11-02 复核时已变为 11,030 条 / 18.7% / 133,179 条，故本报告一律以 10-30 快照为准）</td><td><a href="https://theaimarketpulse.com/insights/">insights 页</a></td><td>11,219 条活跃 AI 岗位；全量 142,049 条中 17.6% 要求 AI；Engineering 45.5% / Product 38.6% / Data 38.2%；工具频次 Python 18.8%、AWS 9.5%、Azure 7.9%、RAG 7.6%、GCP 5.8%、PyTorch 4.8%、K8s 4.7%、Claude 4.5%、Prompt 3.9%、Docker 3.7%、OpenAI 3.7%、TF 3.5%、LangChain 3.0%、Embeddings 2.4%；岗位类别 AI/ML Engineer 75.6%、AI Agent Developer 1.2%、Prompt Engineer 0.3%</td></tr><tr><td>S6</td><td>CSDN AI Agent 技术社区《2026年校招AI风口》</td><td><strong>2026 届校招季（即 2025 年秋季启动）</strong> ⚠️ 距检索日 2026-11 已约一年，时效性弱于 S1–S5</td><td><a href="https://agent.csdn.net/6aa8bf51cf836948fcd21458.html">原文</a></td><td><strong>仅定性引用</strong>：校招岗位技能清单（LangChain、LlamaIndex、Dify、Coze、RAG、Function Calling、多智能体）；涂鸦智能 / 小红书 / 武汉风行在线等 AI 应用与 Agent 开发岗；引用猎聘新发职位增速（架构师 +76.74% 等）</td></tr><tr><td>S7</td><td>offer 多多《2026 秋招企业汇总表》</td><td><strong>2026 届秋招（即 2025 年秋）</strong> ⚠️ 同上，距检索日已约一年</td><td><a href="https://www.givemeoc.com">givemeoc.com</a></td><td><strong>仅定性佐证</strong>：好未来、蚂蚁集团等 2026 届校招开设「大模型研发工程师 / 多模态大模型算法 / AI 研发工程师」等岗位</td></tr><tr><td>S8</td><td>项目本地资产</td><td>—</td><td><code>项目框架.md</code>、<code>README.md</code>、<code>data/skills_dict.csv</code>、<code>src/analyze.py</code></td><td>50 项技能标准名与别名；「应届友好」操作化定义；6 张汇总表口径；四类岗位配额 60/70/40/30</td></tr></tbody></table>
+<blockquote><p><strong>可信度说明</strong>：A 级 = 平台官方报告或可下载原始数据集，用于所有百分比结论；B 级 = 权威媒体 / 官方报纸转载与内部口径，用于交叉验证；C 级 = 行业社区汇编与聚合站点，<strong>只用于岗位名称、技能清单等定性佐证，不用于任何数值结论</strong>。检索时间 2026-11-02，动态页面（S5）数字可能随周更新变化。</p></blockquote>
+<hr>
+<h2 id="附录-e--关键数字摘录表">附录 E · 关键数字摘录表</h2>
+<table><thead><tr><th>维度</th><th>指标</th><th>数值</th><th>来源</th><th>口径备注</th></tr></thead><tbody><tr><td>技能</td><td>AI 岗位内 Python</td><td>18.8%（2,105 / 11,219）</td><td>S5</td><td>AI/ML 岗位内提及率</td></tr><tr><td>技能</td><td>AI 岗位内 RAG</td><td>7.6%（856）</td><td>S5</td><td>同上</td></tr><tr><td>技能</td><td>全量 JD 中「AI」</td><td>19.8%（360,336 条）</td><td>S4</td><td>最高频硬技能，第 2 名仅次于沟通 23.1%</td></tr><tr><td>技能</td><td>全量 JD 中 RAG / Prompt / LangChain</td><td>1.6% / 1.6% / 2.2%</td><td>S4</td><td>与 S5 分母不同</td></tr><tr><td>学历</td><td>AI 技术职位要求硕博</td><td>46.98%</td><td>S2</td><td>硕士 42.72% + 博士 4.27%（原文分项<strong>四舍五入</strong>，相加为 46.99%，与合计 46.98% 差 0.01pp，属正常舍入；原文完整学历分布为 本科 50.10 / 硕士 42.72 / 博士 4.27 / 不限 1.47 / 大专及以下 1.45）</td></tr><tr><td>学历</td><td>整体职位要求硕博（对照）</td><td>4.47%</td><td>S2</td><td>同口径，可直接比较</td></tr><tr><td>学历</td><td>算法岗要求本科 / 硕博</td><td>56% / 34%</td><td>S1</td><td>本科及以上近 90%</td></tr><tr><td>经验</td><td>算法岗 1–5 年经验合计</td><td>近 60%</td><td>S1</td><td>原文合并表述，未拆分</td></tr><tr><td>经验</td><td>AI 产品经理 3–5 年 / 5–10 年</td><td>37% / 20%</td><td>S1</td><td>合计 57% 要 3 年以上</td></tr><tr><td>经验</td><td>数据标注无硬性经验要求</td><td>超 50%</td><td>S1</td><td>约数</td></tr><tr><td>薪资</td><td>算法工程师 / AI 产品经理 / 数据标注</td><td>21,439 / 19,459 / 6,479 元</td><td>S1</td><td><strong>平均</strong>招聘月薪，非中位数</td></tr><tr><td>薪资</td><td>算法 / 机器学习 / 深度学习（2025-02）</td><td>23,510 / 21,534 / 24,015 元</td><td>S3</td><td>平均招聘月薪</td></tr><tr><td>薪资</td><td>杭州 AI 产品经理 / 上海算法工程师</td><td>28,659 / 26,876 元</td><td>S1</td><td>城市峰值</td></tr><tr><td>薪资</td><td>人工智能讲师（2025-02）</td><td>15,792 元</td><td>S3</td><td>平均招聘月薪</td></tr><tr><td>地域</td><td>北京（算法 / 标注 / 产品）</td><td>18.6% / 13.6% / 25.3%</td><td>S1</td><td>各岗位招聘量的城市占比，三类均第 1</td></tr><tr><td>地域</td><td>深圳算法 / 西安全标注 / 杭州 AI 产品</td><td>9.0% / 9.7% / 5.1%</td><td>S1</td><td>各自岗位第二梯队</td></tr><tr><td>结构</td><td>中小微企业招聘占比</td><td>超 80%（20 人以下 13% + 20–99 人 41% + 100–299 人 31%）</td><td>S1</td><td>AI 行业全量招聘</td></tr><tr><td>结构</td><td>实习岗 / 入门级 AI 提及率</td><td>24.49%（2,570 / 10,494）/ 19.77%（3,090 / 15,631）</td><td>S4</td><td><strong>完整八级</strong>：Principal 39.51% &gt; VP 27.31% &gt; Director 24.52% &gt; 实习 24.49% &gt; Executive 19.94% &gt; 中高级 19.89%（316,258 条）&gt; 入门级 19.77% &gt; 未标注 0%（2 条）。⚠️ 原稿「实习仅低于 Principal」<strong>有误</strong>，已修正</td></tr><tr><td>推算</td><td>应届友好岗占比</td><td>严格 ≈18.7%（区间 15–25%）/ 宽松 ≈35%（区间 30–40%）</td><td>本版推算</td><td><code>非原始统计</code> 加权算式见 §3</td></tr></tbody></table>
+<hr>
+<h2 id="附录-f--来源核验清单">附录 F · 来源核验清单</h2>
+<blockquote><p><strong>这是本文档当前最该做的一件事。</strong> 花约 1 小时，把每个引用的数字回原文核对一遍。</p><p>核验失败的数字，一律从 §5 正文删除——<strong>宁可少三条结论，不能错一个数字。</strong></p><p>✅ <strong>2026-11-02 已执行一轮核验（S1–S5）</strong>：五个主要来源的 URL 均可访问、关键数字均可在原文/官方转载中定位，<strong>未发现编造来源</strong>。核验同时<strong>发现并修正了 1 处事实错误</strong>（实习岗职级排名，见附录 B 末尾说明）与 <strong>2 处口径混用</strong>（S3 招聘量增速被当成薪资增速；图 6 薪资与占比混排）。<strong>剩余 S6 / S7 为 C 级来源，仅作定性佐证，仍待核。</strong></p></blockquote>
+<h3 id="操作步骤">操作步骤</h3>
+<ol><li>在项目下建目录 <code>output/核验截图/</code>，按来源分子目录（<code>S1/</code>、<code>S2/</code>…）。</li><li>打开来源原文，定位到下表的数字，<strong>截图存成 <code>S1-硕博46.98.png</code></strong> 这样的文件名。</li><li>在下表「状态」列打勾，填核验日期；核不到的写「❌ 未找到」并说明卡在哪。</li><li>全部核完，把本文档卷首的「阶段」改成「Phase 1（已核验）」。</li></ol>
+<h3 id="核验表">核验表</h3>
+<table><thead><tr><th>#</th><th>来源</th><th>必须核验的数字</th><th>状态</th><th>核验日</th><th>核验结论</th></tr></thead><tbody><tr><td><strong>S1</strong></td><td>智联《2025年人工智能产业人才发展报告》</td><td>算法岗 本科 56% / 硕博 34%；AI 产品 本科 77%、3–5 年 37%、5–10 年 20%；数据标注 大专 45%、无经验 &gt;50%；月薪 21,439 / 19,459 / 6,479；城市 18.6% / 13.6% / 25.3%；中小微 &gt;80%；上海 26,876；杭州 28,659</td><td>✅</td><td>2026-11-02</td><td>全部对得上（百度百科词条 + 潮新闻 / 搜狐 / 新浪转载互相印证）。✅ 求职者侧已回原文核对：53%/60%/64% 是算法岗 / 数据标注 / AI 产品经理<strong>三个岗位各自的本科占比</strong>，另算法岗硕博 35%、数据标注大专 31%；原「三种表述并存」为误判，已修正</td></tr><tr><td><strong>S2</strong></td><td>猎聘《2025 AI 技术人才供需洞察报告》</td><td><strong>硕博 46.98%</strong>（硕士 42.72% + 博士 4.27%）；整体 4.47%；算法工程师占 67.17%</td><td>✅</td><td>2026-11-02</td><td>全部对得上（东方财富研报 PDF / 腾讯新闻 / 绍兴日报 / 新华社稿互相印证）。另核出完整学历分布：硕士 42.72 / 本科 50.10 / 博士 4.27 / 不限 1.47 / 大专及以下 1.45</td></tr><tr><td><strong>S3</strong></td><td>新华社 / 党报转载（2025-03）</td><td>算法 23,510 元；机器学习 21,534；深度学习 24,015；讲师 15,792；数据标注需求 +50%</td><td>✅（<strong>已修口径</strong>）</td><td>2026-11-02</td><td>月薪数字对得上。⚠️ 原稿把 46.8% / 40.1% / 5.1% / 112.4% 写成薪资增速，实为<strong>招聘岗位数同比增速</strong>，已在附录 D 拆分标注</td></tr><tr><td><strong>S4</strong></td><td>Qarera《The Most In-Demand Skills of 2026》</td><td>360,336 条；AI 19.8%；Python 18.6%；LLM 4.2%；RAG 1.6%；Prompt 1.6%；<strong>按职级 实习 24.5% / 入门 19.8%</strong></td><td>✅（<strong>已修错误</strong>）</td><td>2026-11-02</td><td>Zenodo DOI 10.5281/zenodo.21204423 与 Kaggle / HuggingFace 镜像均可访问。⚠️ 核出原始八级职级表：Principal 39.51 &gt; VP 27.31 &gt; Director 24.52 &gt; <strong>实习 24.49</strong> &gt; Executive 19.94 &gt; 中高级 19.89 &gt; 入门 19.77 —— 原稿「实习仅低于 Principal」<strong>错误</strong>，已在六处修正</td></tr><tr><td><strong>S5</strong></td><td>AI Pulse</td><td>11,219 条；Python 18.8%；RAG 7.6%；Prompt 3.9%；LangChain 3.0%</td><td>✅（<strong>已锁快照</strong>）</td><td>2026-11-02</td><td>页面可访问、数字曾一度一致。⚠️ 复核时页面已刷新为 11,030 条 / 18.7% / 133,179 条，故本报告<strong>统一锁定 2026-10-30 前后快照</strong>并在附录 D 注明</td></tr><tr><td><strong>S6</strong></td><td>CSDN（C 级）</td><td>✅ 已核（2026-11-03）：文章存在，技能关键词（LangChain / LlamaIndex / Dify / Coze / RAG / Function Calling / 多智能体）与公司案例（涂鸦智能、小红书、武汉风行在线）属实，猎聘增速（架构师 +76.74%）亦可对上。<strong>但该文是带课程引流的营销文</strong>，其「AI 岗位同比 +47.30%」转引自脉脉，非一手——仅可定性引用</td><td>✅</td><td>2026-11-03</td><td>待核（C 级，仅定性）</td></tr><tr><td><strong>S7</strong></td><td>offer 多多（C 级）</td><td>✅ 已核（2026-11-03）：站点存在且为校招信息聚合站，2027 届在列岗位可见「联想 · AI 应用开发工程师 / AI 安全工程师」「小红书 · Agent 研发工程师」，可佐证校招确有 AI 岗。招聘链接多为会员可见，<strong>仅作定性佐证</strong></td><td>✅</td><td>2026-11-03</td><td>待核（C 级，仅定性）</td></tr></tbody></table>
+<h3 id="核验失败时怎么办">核验失败时怎么办</h3>
+<table><thead><tr><th>情况</th><th>处理</th></tr></thead><tbody><tr><td>数字对不上（原文是别的数）</td><td>改成原文数字，并重算依赖它的结论</td></tr><tr><td>找不到这个数字</td><td>从正文删除该句，附录 E 该行标注「❌ 无法溯源」</td></tr><tr><td>整份来源打不开 / 不存在</td><td>该来源降为 C 级，仅作定性；所有依赖它的百分比全部删除</td></tr><tr><td>只能找到转述、找不到原文</td><td>标注「二手转述」，结论强度降一档</td></tr></tbody></table>
+<blockquote><p><strong>为什么要这么严：</strong> 答辩时被问「46.98% 出自哪」，你打开原文指着那一行，全场信服；打不开，前面所有分析一起作废。</p></blockquote>
+<h3 id="核验优先级">核验优先级</h3>
+<ol><li><strong>S2 的 46.98%</strong> —— 全文最强的一个数字，也是唯一直观的倍数对比（10.5 倍）</li><li><strong>S5 的 RAG 7.6% / Prompt 3.9%</strong> —— 图 1 与图 4 的锚点</li><li><strong>S4 的完整八级职级表</strong>（含 Director 24.52% / VP 27.31%）—— 修正后「最意外发现」的全部依据，也正是本次核验揪出错误的地方，<strong>务必自己再看一遍原始 CSV</strong></li><li><strong>S1 的三个薪资数</strong> —— 图 5 的全部内容</li><li>其余</li></ol>
+<hr>
+<h2 id="修订记录2026-11-02-回原文核验后">修订记录（2026-11-02 回原文核验后）</h2>
+<blockquote><p>本轮核验了 S1–S5 五个主要来源，<strong>URL 均可访问、关键数字均可在原文或官方转载中定位，未发现编造来源</strong>。在此基础上做了如下修改（正文里原有的 🔧 修订标记已在最终版清理，明细以本表为准）：</p></blockquote>
+<table><thead><tr><th>#</th><th>类型</th><th>问题</th><th>处理</th></tr></thead><tbody><tr><td>1</td><td>🔴 事实错误</td><td>「实习岗 AI 提及率 24.5%，<strong>仅低于</strong> Principal 39.5%」——实测 Director 24.52%、VP 27.31% 均高于实习，实习只排第 4</td><td>补 S4 完整八级表；结论改为「AI 提及率随资历上升，唯一例外是实习岗高于入门级；入门级最低、管理层最高」。同步修正 §0、§1.2、§5 一④、§5 七、附录 A、附录 D、附录 E 共 7 处</td></tr><tr><td>2</td><td>🔴 口径混用</td><td>S3 的 46.8% / 40.1% / 5.1% / 112.4% 是<strong>招聘岗位数</strong>同比增速，被写成了薪资增速</td><td>附录 D 拆分标注，明确「增速 ≠ 薪资」</td></tr><tr><td>3</td><td>🔴 归属错误</td><td>「<strong>算法岗</strong> 46.98% 要硕博」——46.98% 是猎聘「<strong>AI 技术职位</strong>」口径，算法岗自身是 34%（智联）</td><td>§5 三 修正并加警示</td></tr><tr><td>4</td><td>🟠 未锁快照</td><td>S5（AI Pulse）每周刷新，复核时已从 11,219 条 / 17.6% / 142,049 变为 11,030 条 / 18.7% / 133,179</td><td>全文锁定 <strong>2026-10-30 前后快照</strong></td></tr><tr><td>5</td><td>🟠 自相矛盾</td><td>「薪资最高的岗位是算法 21,439 元」与图 5 首行「杭州 AI 产品经理 28,659 元」冲突</td><td>区分「整体平均」与「城市峰值」，补比较口径警告</td></tr><tr><td>6</td><td>🟠 量纲混排</td><td>图 6 把「招聘量占比」与「月薪」放在同一张表同一行</td><td>拆为图 6a（占比）/ 图 6b（薪资）</td></tr><tr><td>7</td><td>🟡 结构</td><td>图 6 无正文小节；正文「一~七」与「5.3」两套编号并存</td><td>图 6 独立成节，正文统一为「一~九」</td></tr><tr><td>8</td><td>🟡 表述</td><td>全文称「8 份公开资料」，但 S8 是项目内部口径；又称「国内三大招聘平台报告」，实际只有智联 + 猎聘两家平台</td><td>统一为「7 份公开资料 + 1 份内部口径」「两大平台 + 权威媒体」</td></tr><tr><td>9</td><td>🟡 可复算性</td><td>§3 称推算「可复算」却未给算式</td><td>补四类岗位加权算式，严格口径 ≈18.7%、宽松 ≈35%；并声明各档友好率为估计值</td></tr><tr><td>10</td><td>🟡 表格</td><td>图 1、十天排期表用左右并排双表头，导出 Word 易串行</td><td>均拆为独立表</td></tr><tr><td>11</td><td>🟡 锚点</td><td>标题含 ✅ 等符号，部分渲染器生成锚点时会丢字符，目录链接失效</td><td>状态符号移出标题</td></tr><tr><td>12</td><td>🟢 补充</td><td>局限仅 7 条，未覆盖动态来源与「提及≠要求」</td><td>附录 B 补至 9 条；§2.3 补 <code>岗位性质</code> 字段（对应 §1.2b 的 H5）；46.98% 舍入差加注</td></tr></tbody></table>
+<p><strong>本轮核验结果（2026-11-03）</strong></p>
+<table><thead><tr><th>#</th><th>原待办</th><th>结论</th></tr></thead><tbody><tr><td>①</td><td>S6、S7（C 级）未核验</td><td>✅ <strong>已完成</strong>。S6 文章真实存在、内容可对上，但性质是<strong>带课程引流的营销文</strong>，只能定性引用；S7 为校招聚合站，确认 2027 届确有 AI 应用 / Agent 校招岗（联想、小红书），亦仅定性</td></tr><tr><td>②</td><td>S1 求职者侧数字多种表述并存</td><td>✅ <strong>系误判，已更正</strong>。回原文后确认：53%/60%/64% 是算法岗、数据标注、AI 产品经理<strong>三个岗位各自的本科占比</strong>，不是同一个数字的三种写法；算法岗硕博 35%、数据标注大专 31%</td></tr><tr><td>③</td><td>图 4 仍是方向性编码</td><td>⏳ <strong>未解决，Phase 2 采完数据前无解</strong>。已补《图 4 替换规程》于 §1.2b。另用公开数据集做了<strong>外部交叉验证</strong>（附录 G，8,051 条 JD）：方向成立，但强度远低于方向性编码——RAG/LangChain 实测只差约 1 个百分点</td></tr></tbody></table>
+<p><strong>剩余待办</strong>：仅 ③，随 Phase 2 一并完成。</p>
+<blockquote><p><strong>构建说明</strong>：<code>AI岗位招聘数据分析_填充版报告.html</code> 现由 <code>src/build_report_html.py</code> 从本文档自动生成（图表为构建时由 Python 生成的静态 SVG，不依赖 JS）。<strong>Markdown 是唯一内容源</strong>，改完内容重跑该脚本即可，不要再手工改 HTML。</p></blockquote>
+<hr>
+<p><em>AI 岗位招聘数据分析 · 第一阶段桌面研究底稿 ｜ 依照《项目框架》结构生成 ｜ 资料检索 2026-11-02 ｜ 核验修订 2026-11-02 ｜ 本版为二手资料综合，结论仅支持方向判断；一手验证见 §2 与 §1.2b</em></p>
+<hr>
+<h2 id="附录-g--外部交叉验证8051-条公开-ai-岗位-jd">附录 G · 外部交叉验证（8,051 条公开 AI 岗位 JD）</h2>
+<blockquote><p>本节对 §1.2b 的 H3 / H4 做一次独立检验。</p><p><strong>它是交叉验证，不是对图 4 的替换</strong>——数据以欧美英文岗为主，与中文校招不是同一个 population。</p></blockquote>
+<h3 id="g1-数据">G.1 数据</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody><tr><td>来源</td><td>GitHub 公开仓库 <code>alexeygrigorev/ai-engineering-field-guide</code> 的 <code>job-market/data_structured/</code></td></tr><tr><td>时间窗</td><td>2026-02 ~ 2026-09，共 9 期按月快照</td></tr><tr><td>样本</td><td><strong>8,051 条</strong> AI 相关岗位 JD，每条含岗位名 / 公司 / 地点 / 结构化技能标签</td></tr><tr><td>分组</td><td>资深 4,252 / 非资深 3,799。<strong>职级由岗位标题关键词推断</strong>（Senior / Sr / Staff / Principal / Lead / Manager / Architect…），不是企业标注</td></tr><tr><td>复现</td><td><code>python src/analyze_external.py</code> → <code>output/tables/09_外部交叉验证_技能差.csv</code></td></tr></tbody></table>
+<blockquote><p>标题带 Junior / Entry / Intern 的只有 160 条（2%），单独比会失真，已并入「非资深」。</p></blockquote>
+<h3 id="g2-结果节选">G.2 结果（节选）</h3>
+<table><thead><tr><th>技能</th><th>非资深</th><th>资深</th><th>差</th></tr></thead><tbody><tr><td>Prompt Engineering</td><td>11.5%</td><td>7.5%</td><td><strong>−3.9</strong></td></tr><tr><td>AI Agents</td><td>19.4%</td><td>17.9%</td><td>−1.5</td></tr><tr><td>LangChain</td><td>5.3%</td><td>4.2%</td><td>−1.1</td></tr><tr><td>RAG</td><td>13.8%</td><td>13.1%</td><td>−0.7</td></tr><tr><td>PyTorch</td><td>8.8%</td><td>8.0%</td><td>−0.7</td></tr><tr><td>Fine-Tuning</td><td>5.9%</td><td>5.5%</td><td>−0.5</td></tr><tr><td>Vector Databases</td><td>19.0%</td><td>23.0%</td><td>+4.1</td></tr><tr><td>Distributed Systems</td><td>7.1%</td><td>13.8%</td><td><strong>+6.7</strong></td></tr><tr><td>Observability</td><td>10.2%</td><td>20.1%</td><td><strong>+9.8</strong></td></tr><tr><td>CUDA</td><td>出现率 &lt; 5%</td><td>—</td><td>无法检验</td></tr></tbody></table>
+<h3 id="g3-判定">G.3 判定</h3>
+<ul><li><strong>H3（应届岗更常要求 RAG / Prompt / LangChain / Agent）→ 🟡 弱支持。</strong> 方向全部为负（非资深更高），但除 Prompt Engineering 外，RAG / LangChain / Agent 的差值只有 <strong>0.7–1.5 个百分点</strong>。</li><li><strong>H4（应届岗更少要求训练/系统层）→ 🟡 部分支持。</strong> Distributed Systems（+6.7）、Observability（+9.8）明显；但 CUDA 出现率不足 5%，预训练类技能在该数据集的标签体系里基本不出现，无法检验。</li><li><strong>最值得写进报告的反差：方向对，强度被高估了。</strong> Phase 1 的方向性编码把 RAG / Prompt / LangChain 标成「+3，最强正向」，实测只差 1 个百分点左右。 这说明<strong>「二手资料 + 强度编码」会系统性放大效应</strong>——这是方法层面的教训，不是数据错误。</li></ul>
+<h3 id="g4-局限">G.4 局限</h3>
+<ol><li><strong>population 不同</strong>：欧美英文岗 vs 中文校招，百分比不可移植</li><li><strong>职级靠标题推断</strong>，企业真实职级未知，且「无 senior 标记」里混着中级岗</li><li><strong>技能标签由数据集作者用 LLM 抽取</strong>，存在标注误差</li><li><strong>时间错位</strong>：2026-02~09 vs 中文资料的 2025 年</li><li><strong>仍不能替代中文一手数据</strong>——图 4 依然要等 Phase 2</li></ol>
+<blockquote><p>这一节的价值在于：它把「方向性编码可能夸大」这件事，从猜测变成了<strong>有 8,051 条样本支撑的判断</strong>。</p></blockquote>
+<hr>
+<p style="color:#9ca3af;font-size:12px;text-align:center">
+本页由 <code>src/build_report_html.py</code> 从同名 Markdown 自动生成，请勿手工编辑。
+</p>
+</div>
+</body>
+</html>
